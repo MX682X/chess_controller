@@ -3,6 +3,8 @@
 #define SET_LED       's'
 #define CLR_LED       'k'
 #define TGL_LED       'x'
+#define GET_LEDS      'l'
+#define GET_REEDS     'r'
 
 #define CURR_LINE     GPR.GPR2
 #define LINE_REED     GPR.GPR1
@@ -61,7 +63,7 @@ void setup() {
   pinMode(PIN_PD0, OUTPUT);
   digitalWriteFast(PIN_PA0, HIGH);  // init FET loop
   CURR_LINE = 0x00;
-  Serial.begin(1000000);
+  Serial.begin(115200);
   
   Serial.println("Setup Done");
   digitalWriteFast(PIN_PD0, LOW);
@@ -185,9 +187,9 @@ void loop() {
       }
       number -= 1; // adjust 1~8 to 0~7
       uint8_t bit_pos = 1 << letter;
-      if (cmd == 'p') {
+      if (cmd == GET_LEDS) {
           print_led_board();
-      } else if (cmd == 'P') {
+      } else if (cmd == GET_REEDS) {
           print_reed_board();
       } else {
         if (letter < 8 && number < 8) {
@@ -232,12 +234,16 @@ void print_reed_board(void) {
     Serial.print(": ");
     uint8_t *reed_line = reed_matrix[line_num-'1'];
     for (uint8_t j = 0; j < 8; j++) {
-      Serial.print(*reed_line);
+      if (*reed_line > 100)
+        Serial.print('x');
+      else
+        Serial.print('_');
       Serial.write(' ');
       reed_line++;
     }
     Serial.println();
   }
+  Serial.println("   A B C D E F G H");
 }
 
 void boot_splash(void) {
