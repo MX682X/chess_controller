@@ -4,3 +4,6 @@
 *.lss
 *.map
 *.o
+avr/kicad/chessboard/chessboard-backups/*
+avr/kicad/chessboard/chessboard-backups/*
+avr/kicad/chessboard/fp-info-cache

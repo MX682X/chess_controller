@@ -33,6 +33,7 @@ uint8_t led_matrix[] = {
 
 
 uint8_t reed_matrix[8][8] = {};
+uint8_t new_reed[8] = {};
 
 uint8_t serial_buffer[8] = { 0x00 };
 uint8_t serial_position = 0;
@@ -43,15 +44,6 @@ uint8_t all_lines_counter = 0;
 uint8_t* current_leds = led_matrix;
 
 void setup() {
-  // put your setup code here, to run once:
-//  pinMode(GEM1, OUTPUT);
-//  pinMode(GEM2, OUTPUT);
-//  pinMode(GEM3, OUTPUT);
-//  pinMode(GEM4, OUTPUT);
-//  pinMode(GEM5, OUTPUT);
-//  pinMode(GEM6, OUTPUT);
-//  pinMode(GEM7, OUTPUT);
-//  pinMode(GEM8, OUTPUT);
   PORTA.DIR = 0xFF; // Set all Common Pins to OUTPUT
   PORTB.DIR = 0xFF; // Set all LED Pins to OUTPUT
 
@@ -60,14 +52,16 @@ void setup() {
 
   TCB4.INTFLAGS = 0x03; // Clear ISR Flags
   TCB4.INTCTRL = 0x02;  // Overflow ISR
-  TCB4.CCMP = (F_CPU/2) / (8*40); // 320 LPS
+  //TCB4.CCMP = (F_CPU/2) / (8*40); // 320 LPS
+  TCB4.CCMP = 65000;
   TCB4.CTRLA = TCB_CLKSEL_DIV2_gc | TCB_ENABLE_bm;
   
  
   digitalWriteFast(PIN_PD0, HIGH);  // onboard LED
   pinMode(PIN_PD0, OUTPUT);
   digitalWriteFast(PIN_PA0, HIGH);  // init FET loop
-  Serial.begin(115200);
+  CURR_LINE = 0x00;
+  Serial.begin(1000000);
   
   Serial.println("Setup Done");
   digitalWriteFast(PIN_PD0, LOW);
@@ -77,17 +71,20 @@ void setup() {
 
 void loop() {
   uint8_t output_buffer[5] = {};  // keep in stack for faster access
+  /*
   cli();                          // ISR guard
   uint8_t flags = ACQ_STATUS;
   uint8_t new_reed = LINE_REED;
   uint8_t line = CURR_LINE;
-  sei();
-
+  sei(); */
+  /*
   if (flags & 0x02) {    // one line scanned
     ACQ_STATUS &= ~0x02;  // clear Flag
     uint8_t *old_reed = reed_matrix[line];
+        Serial.println(line);
+    
     for (uint8_t i = 0; i < 8; i++) {
-      uint8_t value = *old_reed;
+      uint8_t value = old_reed[i];
       if(new_reed & 0x01) {
         if (value < 150)
           value += 1;
@@ -95,18 +92,47 @@ void loop() {
         if (value > 50)
           value -= 1;
       }
-      *old_reed = value;
-      old_reed += 1;
+      old_reed[i] = value;
       new_reed >>= 1;
     }
   }
-  
-  if (flags & 0x01) {                   // all lines scanned
+  */
+  if (ACQ_STATUS & 0x01) {                   // all lines scanned
     ACQ_STATUS &= ~0x01;                // clear Flag
+    uint8_t *pNewReed = &new_reed[0];
+    uint8_t *pOldReed = &reed_matrix[0][0];
+    for (uint8_t i = 0; i < 8; i++) {
+      uint8_t newReed = *(pNewReed++);
+      for (uint8_t j = 0; j < 8; j++) {
+        uint8_t value = *pOldReed;
+        if(newReed & 0x01) {
+          if (value < 150)
+            value += 1;
+        } else {
+          if (value > 50)
+            value -= 1;
+        }
+        *(pOldReed++) = value;
+        newReed >>= 1;
+      }
+    }
     if (++all_lines_counter >= 24) {    // 24 iterations
       all_lines_counter = 0;
       uint8_t *reed = &reed_matrix[0][0];
+      
       for (uint8_t line = '1'; line <= '8'; line++) {
+        /*
+        if (line == '7') {
+          Serial.print(reed_matrix[7][0]);
+          Serial.print(reed_matrix[7][1]);
+          Serial.print(reed_matrix[7][2]);
+          Serial.print(reed_matrix[7][3]);
+          Serial.print(reed_matrix[7][4]);
+          Serial.print(reed_matrix[7][5]);
+          Serial.print(reed_matrix[7][6]);
+          Serial.println(reed_matrix[7][7]);
+        }
+        */
         for (uint8_t col = 'a'; col <= 'h'; col++) {
           uint8_t counter = *reed;
           if (counter >= 100) {       // count up
@@ -163,8 +189,6 @@ void loop() {
           print_led_board();
       } else if (cmd == 'P') {
           print_reed_board();
-      } else if (cmd == 'x') {
-
       } else {
         if (letter < 8 && number < 8) {
           if (cmd == SET_LED) {
@@ -244,21 +268,21 @@ void boot_splash(void) {
 
 
 ISR(TCB4_INT_vect) {
-  LINE_REED = REED_VPORT.IN;          // save reed state
   uint8_t line = CURR_LINE + 1;       // use GPIO Reg for faster access
-  uint8_t com = COM_VPORT.OUT;        // get current active com transistor
+  uint8_t com = COM_VPORT.OUT << 1;   // get current active com transistor
+  new_reed[line - 1]   = REED_VPORT.IN; // save reed info
   COM_VPORT.OUT = 0x00;               // disable com Transistors
-  if (com & 0x80) {
+  if (com == 0x00) {
     COM_VPORT.OUT = 0x01;             // enable first com transistor
     LED_VPORT.OUT = current_leds[0];  // load new LED state
     ACQ_STATUS |= 0x01;               // indicator for "all 8"
+    CURR_LINE = 0x00;
     VPORTD.IN |= 0x01;                // activity PD0
-    line = 0;
   } else {
-    COM_VPORT.OUT = com << 1;         // enable next com transistor
+    COM_VPORT.OUT = com;              // enable next com transistor
     LED_VPORT.OUT = current_leds[line];  // load new LED state
-    ACQ_STATUS |= 0x02;               // indicator for new Line
+    //ACQ_STATUS |= 0x02;               // indicator for new Line
+    CURR_LINE = line;                   // update Current line
   }
-  CURR_LINE = line;                   // update Current line
   TCB4.INTFLAGS = 0x03;
 }
