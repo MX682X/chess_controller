@@ -2,25 +2,17 @@ from logging import warning
 
 import serial
 
-import rlist
-
-
-def clrall(ser: serial.serialposix.Serial):
-    for row in range(1, 9):
-        for col in range(97, 97 + 8):
-            s = "k" + chr(col) + str(row) + "\n"
-            ser.write(s.encode())
+import toolbox
 
 
 arduino = serial.Serial(port='/dev/ttyUSB0', baudrate=115200, timeout=.1)
 
-clrall(arduino)
+toolbox.clrall(arduino)
 
-rlist = rlist.getreedlist(arduino)
+rlist = toolbox.getreedlist(arduino)
 
 for i in rlist:
-    s = "s" + i + "\n"
-    arduino.write(s.encode())
+    toolbox.led_turnon(arduino, i)
 
 while True:
     if arduino.in_waiting != 0:
@@ -28,12 +20,10 @@ while True:
         strdata = data.decode("utf-8").strip()
         # print(strdata)
         if strdata[0] == "t":
-            s = "k" + strdata[1:3] + "\n"
-            arduino.write(s.encode())
+            toolbox.led_turnoff(arduino, strdata[1:3])
 
         elif strdata[0] == "p":
-            s = "s" + strdata[1:3] + "\n"
-            arduino.write(s.encode())
+            toolbox.led_turnon(arduino, strdata[1:3])
 
 
         else:
