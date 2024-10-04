@@ -1,4 +1,5 @@
 import logging
+from logging import warning
 
 import serial
 
@@ -55,3 +56,31 @@ def clrall(ser: serial.serialposix.Serial):
     for row in range(1, 9):
         for col in range(97, 97 + 8):
             led_turnoff(ser, chr(col) + str(row))
+
+def boardtopos(b):
+    s = str(b).split("\n")
+    res = []
+
+    row = 8
+
+    for r in s:
+        for collum in range(8):
+            match r[collum*2]:
+                case " ":
+                    warning("did not expect   ")
+                case ".":
+                    pass
+
+
+                case _:
+                    res.append(chr(97+collum)+ str(row))
+        row -= 1
+
+    if row != 0:
+        warning(f"row shold be 0. is {row}")
+
+    return res
+
+
+
+

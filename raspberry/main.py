@@ -4,8 +4,8 @@ import chess
 import serial
 
 import movehandlerfile
-
 import startpos
+import toolbox
 
 arduino = serial.Serial(port='/dev/ttyUSB0', baudrate=115200, timeout=.1)
 
@@ -33,6 +33,7 @@ while True:
                 if move in board.legal_moves:
                     board.push_uci(sMove)
                     print(board)
+                    print(toolbox.boardtopos(board))
                 else:
                     warning("invalid move")
 
