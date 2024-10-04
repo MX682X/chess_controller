@@ -52,6 +52,7 @@ def led_turnoff(ser: serial.serialposix.Serial, field: str):
 
 
 def waitforstartpos(ser: serial.serialposix.Serial):
+    clrall(ser)
     zuviel = []
 
     fehlt = ["a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1",
@@ -67,10 +68,13 @@ def waitforstartpos(ser: serial.serialposix.Serial):
 
         else:
             zuviel.append(i)
-            led_turnon(ser,i)
+            led_turnon(ser, i)
 
     for i in fehlt:
-        led_turnon(ser,i)
+        led_turnon(ser, i)
+
+    # print(f"fehlt: {fehlt}")
+    # print(f"zuviel: {zuviel}")
 
     while True:
         if ser.in_waiting != 0:
