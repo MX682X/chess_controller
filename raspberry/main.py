@@ -5,7 +5,11 @@ import serial
 
 import movehandlerfile
 
+import startpos
+
 arduino = serial.Serial(port='/dev/ttyUSB0', baudrate=115200, timeout=.1)
+
+startpos.waitforstartpos(arduino)
 
 MH = movehandlerfile.MOVEHANDLER()
 
