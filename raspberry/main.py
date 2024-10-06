@@ -5,12 +5,12 @@ import serial
 
 import movehandlerfile
 import startpos
-from raspberry.startpos import waitforpos
-from raspberry.toolbox import boardtopos
+from startpos import waitforpos
+from toolbox import boardtopos
 
-from config import path
+from config import path,port
 
-arduino = serial.Serial(port='/dev/ttyUSB0', baudrate=115200, timeout=.1)
+arduino = serial.Serial(port=port, baudrate=115200, timeout=.1)
 
 startpos.waitforstartpos(arduino)
 
