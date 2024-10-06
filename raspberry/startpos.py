@@ -5,7 +5,7 @@ import serial
 from toolbox import clrall, getreedlist, led_turnon, led_turnoff
 
 
-def waitforpos(ser: serial.serialposix.Serial, pos: list[str]):
+def waitforpos(ser: serial.serialposix.Serial, pos: list[str],extraturnon:str = ""):
     clrall(ser)
     zuviel = []
 
@@ -26,6 +26,9 @@ def waitforpos(ser: serial.serialposix.Serial, pos: list[str]):
 
     # print(f"fehlt: {fehlt}")
     # print(f"zuviel: {zuviel}")
+
+    if extraturnon != "":
+        led_turnon(ser,extraturnon)
 
     while True:
         if ser.in_waiting != 0:
