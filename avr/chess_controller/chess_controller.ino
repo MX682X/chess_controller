@@ -5,6 +5,8 @@
 #define TGL_LED       'x'
 #define GET_LEDS      'l'
 #define GET_REEDS     'r'
+#define CLR_LED_LINE  'n'
+#define CLR_LED_BOARD 'o'
 
 #define CURR_LINE     GPR.GPR2
 #define LINE_REED     GPR.GPR1
@@ -186,19 +188,27 @@ void loop() {
         letter -= 'A';
       }
       number -= 1; // adjust 1~8 to 0~7
-      uint8_t bit_pos = 1 << letter;
       if (cmd == GET_LEDS) {
-          print_led_board();
+        print_led_board();
       } else if (cmd == GET_REEDS) {
-          print_reed_board();
+        print_reed_board();
+      } else if (cmd == CLR_LED_BOARD) {
+        memset(led_matrix, 0x00, 8);
+      } else if (cmd == CLR_LED_LINE) {
+        if (number < 8) { // n*1
+          led_matrix[number] = 0x00;
+        }
       } else {
-        if (letter < 8 && number < 8) {
-          if (cmd == SET_LED) {
-            led_matrix[number] |= bit_pos;
-          } else if (cmd == CLR_LED) {
-            led_matrix[number] &= ~(bit_pos);
-          } else if (cmd == TGL_LED) {
-            led_matrix[number] ^= bit_pos;
+        if (number < 8) {
+          if (letter < 8) {
+            uint8_t bit_pos = 1 << letter;
+            if (cmd == SET_LED) {
+              led_matrix[number] |= bit_pos;
+            } else if (cmd == CLR_LED) {
+              led_matrix[number] &= ~(bit_pos);
+            } else if (cmd == TGL_LED) {
+              led_matrix[number] ^= bit_pos;
+            }
           }
         }
       }
