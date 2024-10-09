@@ -8,7 +8,7 @@ import startpos
 from startpos import waitforpos
 from toolbox import boardtopos
 
-from config import path,port
+from config import path, port
 
 arduino = serial.Serial(port=port, baudrate=115200, timeout=.1)
 
@@ -24,29 +24,30 @@ while True:
         data = arduino.readline()
         strdata = data.decode("utf-8").strip()
         # print(strdata)
-        if strdata[0] == "t":
-            MH.addtake(strdata[1:3])
-            
-        elif strdata[0] == "p":
-            sMove = MH.addplace(strdata[1:3])
+        match strdata[0]:
+            case "t":
+                MH.addtake(strdata[1:3])
 
-            if sMove is not None:
-                move = chess.Move.from_uci(sMove)
+            case "p":
+                sMove = MH.addplace(strdata[1:3])
 
-                print(move)
-                if move in board.legal_moves:
-                    board.push_uci(sMove)
-                    print(board)
-                    print("---")
-                    result = engine.play(board, chess.engine.Limit(time=0.1))
-                    board.push(result.move)
-                    print(board)
-                    print("---")
-                    waitforpos(arduino, boardtopos(board),chess.square_name(result.move.to_square))
+                if sMove is not None:
+                    move = chess.Move.from_uci(sMove)
+
+                    print(move)
+                    if move in board.legal_moves:
+                        board.push_uci(sMove)
+                        print(board)
+                        print("---")
+                        result = engine.play(board, chess.engine.Limit(time=0.1))
+                        board.push(result.move)
+                        print(board)
+                        print("---")
+                        waitforpos(arduino, boardtopos(board), chess.square_name(result.move.to_square))
 
                 else:
                     warning("invalid move")
-                    waitforpos(arduino,boardtopos(board))
+                    waitforpos(arduino, boardtopos(board))
 
-        else:
-            warning("unkown Beginning: " + strdata[0])
+            case _:
+                warning("unkown Beginning: " + strdata[0])
