@@ -7,6 +7,7 @@ import movehandlerfile
 import startpos
 from startpos import waitforpos
 from toolbox import boardtopos
+from displayfile import DISPLAY
 
 from config import path, port
 
@@ -18,6 +19,7 @@ MH = movehandlerfile.MOVEHANDLER()
 
 board = chess.Board()
 engine = chess.engine.SimpleEngine.popen_uci(path)
+display = DISPLAY()
 
 while True:
     if arduino.in_waiting != 0:
@@ -36,13 +38,16 @@ while True:
 
                     print(move)
                     if move in board.legal_moves:
-                        board.push_uci(sMove)
+                        board.push(move)
                         print(board)
                         print("---")
+                        display.set_top("Your Move: " + sMove)
+
                         result = engine.play(board, chess.engine.Limit(time=0.1))
                         board.push(result.move)
                         print(board)
                         print("---")
+                        display.set_bottom("COM Move: " + result.move.uci())
                         waitforpos(arduino, boardtopos(board), chess.square_name(result.move.to_square))
 
                 else:
