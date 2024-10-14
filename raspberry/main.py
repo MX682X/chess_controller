@@ -3,6 +3,7 @@ from logging import warning
 import chess.engine
 import serial
 
+import cmd_file
 import movehandlerfile
 import startpos
 from startpos import waitforpos
@@ -16,6 +17,7 @@ arduino = serial.Serial(port=port, baudrate=115200, timeout=.1)
 startpos.waitforstartpos(arduino)
 
 MH = movehandlerfile.MOVEHANDLER()
+CH = cmd_file.CMD_HANDLER()
 
 board = chess.Board()
 engine = chess.engine.SimpleEngine.popen_uci(path)
@@ -48,7 +50,8 @@ while True:
                         print(board)
                         print("---")
                         display.set_bottom("COM Move: " + result.move.uci())
-                        waitforpos(arduino, boardtopos(board), chess.square_name(result.move.to_square))
+                        waitforpos(arduino, boardtopos(board), chess.square_name(result.move.to_square),
+                                   cmdfun=CH.cmd_ready)
 
                 else:
                     warning("invalid move")
@@ -56,3 +59,20 @@ while True:
 
             case _:
                 warning("unkown Beginning: " + strdata[0])
+
+    match CH.get_cmd():
+        case None:
+            pass
+        case "stop":
+            break
+
+        case "takeback":
+            board.pop()
+            bt = board.pop()
+            print(f"Deletet Move {bt}. Current Board State:")
+            print(board)
+
+
+        case _ :
+            warning("Unknown Command. How did it get to main?")
+

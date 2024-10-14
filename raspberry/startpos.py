@@ -2,10 +2,14 @@ import logging
 
 import serial
 
+import cmd_file
 from toolbox import clrall, getreedlist, led_turnon, led_turnoff
 
 
-def waitforpos(ser: serial.serialposix.Serial, pos: list[str], extraturnon: str = ""):
+
+
+def waitforpos(ser: serial.serialposix.Serial, pos: list[str], ch:cmd_file.CMD_HANDLER,
+               extraturnon: str = "", ) -> None:
     clrall(ser)
     zuviel = []
 
@@ -31,6 +35,10 @@ def waitforpos(ser: serial.serialposix.Serial, pos: list[str], extraturnon: str 
         led_turnon(ser, extraturnon)
 
     while True:
+        if ch is not None:
+            if ch.cmd_ready():
+                return
+
         if ser.in_waiting != 0:
             data = ser.readline()
             strdata = data.decode("utf-8").strip()
