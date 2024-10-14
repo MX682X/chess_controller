@@ -1,46 +1,34 @@
 import sys
 import queue
-import time
+import multiprocessing
+from time import sleep
 from PyQt6 import QtCore
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtCore import Qt, QSize, QThread
 from PyQt6.QtGui import QPalette, QColor, QKeyEvent
-from PyQt6.QtWidgets import (
-    QApplication,
-    QCheckBox,
-    QComboBox,
-    QDateEdit,
-    QDateTimeEdit,
-    QDial,
-    QDoubleSpinBox,
-    QFontComboBox,
-    QLabel,
-    QLCDNumber,
-    QLineEdit,
-    QMainWindow,
-    QProgressBar,
-    QPushButton,
-    QRadioButton,
-    QSlider,
-    QSpinBox,
-    QTimeEdit,
-    QGridLayout,
-    QWidget,
-    QSizePolicy,
-)
+from PyQt6.QtWidgets import *
+from multiprocessing import Process, Lock, Pipe, Value
 
+import main
 
 
 class BoardSimulator(QMainWindow):
-    def __init__(self, ledQ:queue.Queue, reedQ:queue.Queue):
+    def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Widgets App")
+        self.setWindowTitle("Chess Board")
 
-        board_layout = QGridLayout()
+        window_widget = QWidget()
         window_layout = QGridLayout()
+        window_widget.setLayout(window_layout)
 
-        self.ledQ = ledQ
-        self.reedQ = reedQ
+
+        board_widget = QWidget()
+        board_layout = QGridLayout()
+        board_widget.setLayout(board_layout)
+    
+        window_layout.addWidget(board_widget, 0, 0)
+
+        self.reedQ = queue.SimpleQueue()
 
         self.startPos = {
             0: " R",
@@ -114,14 +102,7 @@ class BoardSimulator(QMainWindow):
         for i in range (8):
             board_layout.setRowMinimumHeight(i, 50)
             board_layout.setColumnMinimumWidth(i, 50)
-
-        board_widget = QWidget()
-        board_widget.setLayout(board_layout)
-
-        window_widget = QWidget()
-        window_widget.setLayout(window_layout)
-        window_layout.addWidget(board_widget, 0, 0)
-        
+    
         self.reset_button = QPushButton()
         self.reset_button.setFixedSize(250, 50)
         self.reset_button.setText("Reset Positions")
@@ -137,28 +118,9 @@ class BoardSimulator(QMainWindow):
         # Set the central widget of the Window. Widget will expand
         # to take up all the space in the window by default.
         self.setCentralWidget(window_widget)
+        self.show()
+       
 
-        app = QApplication(sys.argv)
-        app.exec()
-
-        while(1):
-            if (ledQ.empty() == False):
-                msg = ledQ.get(False)
-                if (len(msg) in range(2,4)): #at least a letter or 3 symbols plus new line   
-                    if (msg[0] == 's'):
-                        col = self.let_to_col[msg[1]]
-                        row = int(msg[2])
-                        self.set_led("*", row, col)
-                    elif (msg[0] == 'k'):
-                        col = self.let_to_col[msg[1]]
-                        row = int(msg[2])
-                        self.set_led(" ", row, col)
-                    elif (msg[0] == 'o'):
-                        for row in range(8):
-                            for col in range(8):
-                                self.set_led(" ", row, col)
-            time.sleep(0.1)
-    
     def set_led(self, val, row, col):
         old_text = self.fields[row][col][0].text()
         old_text[0] = val
@@ -177,7 +139,7 @@ class BoardSimulator(QMainWindow):
                     if (self.in_hand == "  "):
                         if (piece != " "):
                             field[0].setText("  ")
-                            command = "t{0}{1}".format(self.column_to_letter[field[1]], field[2])
+                            command = "t{0}{1}".format(self.col_to_let[field[1]], field[2])
                             print(command)
                             self.reedQ.put(command + "\n")
                             self.in_hand = " " + piece
@@ -187,18 +149,18 @@ class BoardSimulator(QMainWindow):
                             field[0].setText(self.in_hand)
                             self.in_hand = "  "
                             self.piece_button.setText("In Hand: ")
-                            command = "p{0}{1}".format(self.column_to_letter[field[1]], field[2])
+                            command = "p{0}{1}".format(self.col_to_let[field[1]], field[2])
                             print(command)
                             self.reedQ.put(command + "\n")
                         else:               # capturing figure
-                            command = "t{0}{1}".format(self.column_to_letter[field[1]], field[2])
+                            command = "t{0}{1}".format(self.col_to_let[field[1]], field[2])
                             print(command)
                             self.reedQ.put(command + "\n")
-                            time.sleep(0.1)
+                            sleep(0.01)
                             field[0].setText(self.in_hand)
                             self.in_hand = "  "
                             self.piece_button.setText("In Hand: ")
-                            command = "p{0}{1}".format(self.column_to_letter[field[1]], field[2])
+                            command = "p{0}{1}".format(self.col_to_let[field[1]], field[2])
                             print(command)
                             self.reedQ.put(command + "\n")
                     
@@ -220,8 +182,71 @@ class BoardSimulator(QMainWindow):
                     button.setText("  ")
 
 
+    # API Functions
+    @property
+    def in_waiting(self):
+        return self.reedQ.qsize()
 
-#ledQ = queue.Queue()
-#reedQ = queue.Queue()
-#window = BoardSimulator(ledQ, reedQ)
-#window.show()
+    def readline(self):
+        if not self.reedQ.empty():
+            return self.reedQ.get().encode("UTF-8")
+        else:
+            return ""
+    
+    def write(self, data):
+        msg = data.decode("utf-8")
+        if (len(msg) in range(2,4)): #at least a letter or 3 symbols plus new line   
+            if (msg[0] == 's'):
+                col = self.let_to_col[msg[1]]
+                row = int(msg[2])
+                self.set_led("*", row, col)
+            elif (msg[0] == 'k'):
+                col = self.let_to_col[msg[1]]
+                row = int(msg[2])
+                print("Cleared: {0}{1}".format(col, row))
+                self.set_led(" ", row, col)
+            elif (msg[0] == 'o'):
+                for row in range(8):
+                    for col in range(8):
+                        self.set_led(" ", row, col)
+            elif (msg[0] == 'r'):   # get all used board positions
+                for row in range(7, -1):
+                    ret = "{0}: ".format(row + 1)
+                    for col in range(8):
+                        piece = self.fields[row][col][0].text()
+                        if (piece[1] == " "):
+                            ret += "_ "
+                        else:
+                            ret += "x "
+                    print(ret)
+                    self.reedQ.put(ret)
+
+
+
+class process_handler():
+    def __init__(self):
+        object_queue = multiprocessing.SimpleQueue()
+
+        self.gui = Process(target=self.gui_process, args=(object_queue, ))
+        self.gui.start()
+
+        sleep(1)
+        gui = object_queue.get()
+
+        print("Starting Chess engine")
+        self.chess = Process(target=main.main, args=(gui, ))
+        self.chess.start()
+
+        while(1):
+            sleep(0.1)
+    
+    def gui_process(self, queue):
+        self.app = QApplication(sys.argv)
+        gui = BoardSimulator()
+        queue.put(gui)
+        sleep(1)
+        gui.show()
+        sys.exit(self.app.exec())
+
+if __name__ == '__main__':
+    proc = process_handler()

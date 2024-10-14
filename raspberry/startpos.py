@@ -1,6 +1,7 @@
 import logging
 
 import serial
+from time import sleep
 
 from toolbox import clrall, getreedlist, led_turnon, led_turnoff
 
@@ -31,6 +32,7 @@ def waitforpos(ser: serial.serialposix.Serial, pos: list[str], extraturnon: str 
         led_turnon(ser, extraturnon)
 
     while True:
+        sleep(0.1)
         if ser.in_waiting != 0:
             data = ser.readline()
             strdata = data.decode("utf-8").strip()

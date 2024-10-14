@@ -1,4 +1,5 @@
 from logging import warning
+from time import sleep
 
 import serial
 
@@ -14,6 +15,7 @@ for i in rlist:
     toolbox.led_turnon(arduino, i)
 
 while True:
+    sleep(0.1)
     if arduino.in_waiting != 0:
         data = arduino.readline()
         strdata = data.decode("utf-8").strip()

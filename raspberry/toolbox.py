@@ -2,6 +2,7 @@ import logging
 
 import chess
 import serial
+from time import sleep
 from chess import Board
 
 
@@ -31,6 +32,7 @@ def getreedlist(ser: serial.serialposix.Serial):
     ser.write(b"r\n")
 
     while True:
+        sleep(0.1)
         if ser.in_waiting != 0:
             data = ser.readline()
             strdata = data.decode("utf-8").strip()

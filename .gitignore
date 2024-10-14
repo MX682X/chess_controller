@@ -7,3 +7,9 @@
 avr/kicad/chessboard/chessboard-backups/*
 avr/kicad/chessboard/chessboard-backups/*
 avr/kicad/chessboard/fp-info-cache
+.venv/*
+raspberry/stockfish*
+raspberry/__pycache__
+raspberry/__pycache__
+raspberry/__pycache__
+raspberry/__pycache__
