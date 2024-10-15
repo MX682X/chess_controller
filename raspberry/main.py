@@ -50,12 +50,11 @@ while True:
                         print(board)
                         print("---")
                         display.set_bottom("COM Move: " + result.move.uci())
-                        waitforpos(arduino, boardtopos(board), chess.square_name(result.move.to_square),
-                                   cmdfun=CH.cmd_ready)
+                        waitforpos(arduino, boardtopos(board), CH, chess.square_name(result.move.to_square), )
 
                 else:
                     warning("invalid move")
-                    waitforpos(arduino, boardtopos(board))
+                    waitforpos(arduino, boardtopos(board),CH)
 
             case _:
                 warning("unkown Beginning: " + strdata[0])
@@ -71,8 +70,8 @@ while True:
             bt = board.pop()
             print(f"Deletet Move {bt}. Current Board State:")
             print(board)
+            waitforpos(arduino, boardtopos(board),
+                       CH)
 
-
-        case _ :
+        case _:
             warning("Unknown Command. How did it get to main?")
-
