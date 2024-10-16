@@ -8,7 +8,7 @@ from toolbox import clrall, getreedlist, led_turnon, led_turnoff
 
 
 
-def waitforpos(ser: serial.serialposix.Serial, pos: list[str], ch:cmd_file.CMD_HANDLER,
+def waitforpos(ser: serial.serialposix.Serial, pos: list[str], ch:cmd_file.CMD_HANDLER = None,
                extraturnon: str = "", ) -> None:
     clrall(ser)
     zuviel = []
@@ -34,7 +34,12 @@ def waitforpos(ser: serial.serialposix.Serial, pos: list[str], ch:cmd_file.CMD_H
     if extraturnon != "":
         led_turnon(ser, extraturnon)
 
+    if fehlt == [] and zuviel == []:
+        return
+
+    logging.info("Entering Waitloop")
     while True:
+
         if ch is not None:
             if ch.cmd_ready():
                 return
@@ -55,6 +60,7 @@ def waitforpos(ser: serial.serialposix.Serial, pos: list[str], ch:cmd_file.CMD_H
                         led_turnon(ser, field)
 
                     if fehlt == [] and zuviel == []:
+                        logging.info("Exit Waitloop")
                         return
                 case "p":
                     field = strdata[1:3]
@@ -65,17 +71,18 @@ def waitforpos(ser: serial.serialposix.Serial, pos: list[str], ch:cmd_file.CMD_H
                         zuviel.append(field)
                         led_turnon(ser, field)
                     if fehlt == [] and zuviel == []:
+                        logging.info("Exit waitloop")
                         return
                 case _:
                     logging.warning("unknown Beginning: " + strdata[0])
 
 
-def waitforstartpos(ser: serial.serialposix.Serial):
+def waitforstartpos(ser: serial.serialposix.Serial,ch):
     startpos = ["a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1",
                 "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2",
                 "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7",
                 "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8", ]
-    waitforpos(ser, startpos)
+    waitforpos(ser, startpos,ch)
 
 
 if __name__ == "__main__":

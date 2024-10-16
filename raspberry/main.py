@@ -6,15 +6,13 @@ import serial
 import cmd_file
 import movehandlerfile
 import startpos
+from config import path, port
+from displayfile import DISPLAY
 from startpos import waitforpos
 from toolbox import boardtopos
-from displayfile import DISPLAY
-
-from config import path, port
 
 arduino = serial.Serial(port=port, baudrate=115200, timeout=.1)
-
-startpos.waitforstartpos(arduino)
+arduino.reset_input_buffer()
 
 MH = movehandlerfile.MOVEHANDLER()
 CH = cmd_file.CMD_HANDLER()
@@ -23,7 +21,14 @@ board = chess.Board()
 engine = chess.engine.SimpleEngine.popen_uci(path)
 display = DISPLAY()
 
+display.set_top("Startposition")
+display.write()
+
+startpos.waitforstartpos(arduino, CH)
+
 while True:
+
+    #sleep(0.01)
     if arduino.in_waiting != 0:
         data = arduino.readline()
         strdata = data.decode("utf-8").strip()
@@ -50,28 +55,34 @@ while True:
                         print(board)
                         print("---")
                         display.set_bottom("COM Move: " + result.move.uci())
+                        display.write()
                         waitforpos(arduino, boardtopos(board), CH, chess.square_name(result.move.to_square), )
 
                 else:
                     warning("invalid move")
-                    waitforpos(arduino, boardtopos(board),CH)
+                    waitforpos(arduino, boardtopos(board), CH)
 
             case _:
                 warning("unkown Beginning: " + strdata[0])
 
-    match CH.get_cmd():
-        case None:
-            pass
-        case "stop":
-            break
+    if CH.cmd_ready():
+        #print("CMD")
+        match CH.get_cmd():
+            case "stop":
+                print("stopping")
+                break
 
-        case "takeback":
-            board.pop()
-            bt = board.pop()
-            print(f"Deletet Move {bt}. Current Board State:")
-            print(board)
-            waitforpos(arduino, boardtopos(board),
-                       CH)
+            case "takeback":
+                board.pop()
+                bt = board.pop()
+                print(f"Deletet Move {bt}. Current Board State:")
+                print(board)
+                waitforpos(arduino, boardtopos(board),
+                           CH)
 
-        case _:
-            warning("Unknown Command. How did it get to main?")
+            case _:
+                warning("Unknown Command. How did it get to main?")
+
+engine.close()
+display.close()
+CH.cmd_close()
