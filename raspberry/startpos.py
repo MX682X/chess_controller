@@ -8,7 +8,7 @@ from toolbox import clrall, getreedlist, led_turnon, led_turnoff
 
 
 
-def waitforpos(ser: serial.serialposix.Serial, pos: list[str], ch:cmd_file.CMD_HANDLER,
+def waitforpos(ser: serial.serialposix.Serial, pos: list[str], ch:cmd_file.CMD_HANDLER = None,
                extraturnon: str = "", ) -> None:
     clrall(ser)
     zuviel = []

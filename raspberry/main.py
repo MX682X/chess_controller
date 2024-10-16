@@ -14,7 +14,7 @@ from config import path, port
 
 arduino = serial.Serial(port=port, baudrate=115200, timeout=.1)
 
-startpos.waitforstartpos(arduino)
+startpos.waitforstartpos(arduino,)
 
 MH = movehandlerfile.MOVEHANDLER()
 CH = cmd_file.CMD_HANDLER()
