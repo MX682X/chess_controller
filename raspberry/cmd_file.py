@@ -18,6 +18,7 @@ def cmd_fun(q:queue.Queue):
 
         q.put(cstr)
 
+        print("put: " + cstr)
         if cstr == "stop":
             return
 

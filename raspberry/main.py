@@ -1,4 +1,5 @@
 from logging import warning
+from time import sleep
 
 import chess.engine
 import serial
@@ -26,6 +27,7 @@ display = DISPLAY()
 startpos.waitforstartpos(arduino,)
 
 while True:
+    sleep(0.01)
     if arduino.in_waiting != 0:
         data = arduino.readline()
         strdata = data.decode("utf-8").strip()
