@@ -6,6 +6,7 @@ cmdlist = ["stop","takeback"]
 
 
 def cmd_fun(q:queue.Queue):
+    print("CMD Ready")
     while True:
         cstr = input().strip()
 
@@ -23,6 +24,7 @@ class CMD_HANDLER:
     def __init__(self):
         self.q = queue.Queue()
         self.t = threading.Thread(target=cmd_fun,args=(self.q,),daemon=True)
+        self.t.start()
 
     def get_cmd(self):
         if not self.q.empty():

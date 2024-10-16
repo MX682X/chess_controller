@@ -14,7 +14,7 @@ from config import path, port
 
 arduino = serial.Serial(port=port, baudrate=115200, timeout=.1)
 
-startpos.waitforstartpos(arduino,)
+
 
 MH = movehandlerfile.MOVEHANDLER()
 CH = cmd_file.CMD_HANDLER()
@@ -22,6 +22,8 @@ CH = cmd_file.CMD_HANDLER()
 board = chess.Board()
 engine = chess.engine.SimpleEngine.popen_uci(path)
 display = DISPLAY()
+
+startpos.waitforstartpos(arduino,)
 
 while True:
     if arduino.in_waiting != 0:
