@@ -24,6 +24,9 @@ board = chess.Board()
 engine = chess.engine.SimpleEngine.popen_uci(path)
 display = DISPLAY()
 
+display.set_top("Hey")
+display.write()
+
 startpos.waitforstartpos(arduino, CH)
 
 while True:
