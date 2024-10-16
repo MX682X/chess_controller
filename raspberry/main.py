@@ -79,5 +79,5 @@ while True:
             case _:
                 warning("Unknown Command. How did it get to main?")
 
-
+CH.cmd_close()
 print("huh")

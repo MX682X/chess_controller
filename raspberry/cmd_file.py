@@ -35,3 +35,6 @@ class CMD_HANDLER:
 
     def cmd_ready(self):
         return not self.q.empty()
+
+    def cmd_close(self):
+        self.t.join()
