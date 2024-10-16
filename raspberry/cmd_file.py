@@ -10,6 +10,8 @@ def cmd_fun(q:queue.Queue):
     while True:
         cstr = input().strip()
 
+        print("got CMD " + cstr)
+
         if cstr not in cmdlist:
             print(f"Unkonwn Command: {cstr}")
             continue
@@ -17,7 +19,7 @@ def cmd_fun(q:queue.Queue):
         q.put(cstr)
 
         if cstr == "stop":
-            break
+            return
 
 
 class CMD_HANDLER:
