@@ -24,7 +24,7 @@ display = DISPLAY()
 startpos.waitforstartpos(arduino, )
 
 while True:
-    print("a")
+    #print("a")
     #sleep(0.01)
     if arduino.in_waiting != 0:
         data = arduino.readline()

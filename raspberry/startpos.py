@@ -34,8 +34,11 @@ def waitforpos(ser: serial.serialposix.Serial, pos: list[str], ch:cmd_file.CMD_H
     if extraturnon != "":
         led_turnon(ser, extraturnon)
 
+    if fehlt == [] and zuviel == []:
+        return
+
     while True:
-        print("b")
+        #print("b")
         if ch is not None:
             if ch.cmd_ready():
                 return
