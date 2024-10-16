@@ -24,7 +24,7 @@ board = chess.Board()
 engine = chess.engine.SimpleEngine.popen_uci(path)
 display = DISPLAY()
 
-display.set_top("Hey")
+display.set_top("Startposition")
 display.write()
 
 startpos.waitforstartpos(arduino, CH)
@@ -58,6 +58,7 @@ while True:
                         print(board)
                         print("---")
                         display.set_bottom("COM Move: " + result.move.uci())
+                        display.write()
                         waitforpos(arduino, boardtopos(board), CH, chess.square_name(result.move.to_square), )
 
                 else:
