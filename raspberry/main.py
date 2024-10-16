@@ -12,7 +12,7 @@ from startpos import waitforpos
 from toolbox import boardtopos
 
 arduino = serial.Serial(port=port, baudrate=115200, timeout=.1)
-
+arduino.reset_input_buffer()
 
 MH = movehandlerfile.MOVEHANDLER()
 CH = cmd_file.CMD_HANDLER()
