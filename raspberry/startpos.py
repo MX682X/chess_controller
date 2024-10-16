@@ -37,7 +37,7 @@ def waitforpos(ser: serial.serialposix.Serial, pos: list[str], ch:cmd_file.CMD_H
     if fehlt == [] and zuviel == []:
         return
 
-    print("Enter Waitloop")
+    logging.info("Entering Waitloop")
     while True:
 
         if ch is not None:
@@ -60,7 +60,7 @@ def waitforpos(ser: serial.serialposix.Serial, pos: list[str], ch:cmd_file.CMD_H
                         led_turnon(ser, field)
 
                     if fehlt == [] and zuviel == []:
-                        print("Exit Waitloop")
+                        logging.info("Exit Waitloop")
                         return
                 case "p":
                     field = strdata[1:3]
@@ -71,7 +71,7 @@ def waitforpos(ser: serial.serialposix.Serial, pos: list[str], ch:cmd_file.CMD_H
                         zuviel.append(field)
                         led_turnon(ser, field)
                     if fehlt == [] and zuviel == []:
-                        print("Exit waitloop")
+                        logging.info("Exit waitloop")
                         return
                 case _:
                     logging.warning("unknown Beginning: " + strdata[0])
