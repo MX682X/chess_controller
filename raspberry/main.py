@@ -1,4 +1,5 @@
 import sys
+import threading
 from logging import warning
 from time import sleep
 
@@ -80,6 +81,8 @@ while True:
             case _:
                 warning("Unknown Command. How did it get to main?")
 
+display.close()
 CH.cmd_close()
 print("huh")
+print(threading.enumerate())
 sys.exit()
