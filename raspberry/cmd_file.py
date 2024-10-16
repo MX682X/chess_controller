@@ -10,7 +10,7 @@ def cmd_fun(q:queue.Queue):
     while True:
         cstr = input().strip()
 
-        print("got CMD " + cstr)
+        #print("got CMD " + cstr)
 
         if cstr not in cmdlist:
             print(f"Unkonwn Command: {cstr}")

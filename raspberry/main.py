@@ -65,6 +65,7 @@ while True:
         case None:
             pass
         case "stop":
+            print("stopping")
             break
 
         case "takeback":
