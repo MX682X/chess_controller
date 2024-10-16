@@ -26,7 +26,6 @@ display.write()
 
 startpos.waitforstartpos(arduino, CH)
 
-print("hey")
 while True:
 
     #sleep(0.01)
