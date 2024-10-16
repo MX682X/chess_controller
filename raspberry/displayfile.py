@@ -23,4 +23,4 @@ class DISPLAY:
         self.bottom = s
 
     def close(self):
-        self.lcd.close(True)
+        self.lcd.close(clear = True)
