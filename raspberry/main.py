@@ -21,7 +21,7 @@ board = chess.Board()
 engine = chess.engine.SimpleEngine.popen_uci(path)
 display = DISPLAY()
 
-startpos.waitforstartpos(arduino, )
+startpos.waitforstartpos(arduino, CH)
 
 while True:
 
@@ -78,3 +78,6 @@ while True:
 
             case _:
                 warning("Unknown Command. How did it get to main?")
+
+
+print("huh")
