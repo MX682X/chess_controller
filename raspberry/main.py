@@ -16,7 +16,6 @@ from toolbox import boardtopos
 
 arduino = serial.Serial(port=port, baudrate=115200, timeout=.1)
 
-print(threading.enumerate())
 
 MH = movehandlerfile.MOVEHANDLER()
 CH = cmd_file.CMD_HANDLER()
@@ -83,8 +82,6 @@ while True:
             case _:
                 warning("Unknown Command. How did it get to main?")
 
+engine.close()
 display.close()
 CH.cmd_close()
-print("huh")
-print(threading.enumerate())
-sys.exit()
