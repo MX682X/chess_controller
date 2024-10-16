@@ -24,7 +24,8 @@ display = DISPLAY()
 startpos.waitforstartpos(arduino, )
 
 while True:
-    sleep(0.01)
+    print("a")
+    #sleep(0.01)
     if arduino.in_waiting != 0:
         data = arduino.readline()
         strdata = data.decode("utf-8").strip()
@@ -61,7 +62,7 @@ while True:
                 warning("unkown Beginning: " + strdata[0])
 
     if CH.cmd_ready():
-        print("CMD")
+        #print("CMD")
         match CH.get_cmd():
             case "stop":
                 print("stopping")
