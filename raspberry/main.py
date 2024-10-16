@@ -1,3 +1,4 @@
+import sys
 from logging import warning
 from time import sleep
 
@@ -81,3 +82,4 @@ while True:
 
 CH.cmd_close()
 print("huh")
+sys.exit()
