@@ -10,7 +10,7 @@ class DISPLAY:
               numbering_mode=GPIO.BOARD, cols=16, rows=2)
 
     def write(self):
-        print("writing")
+        #print("writing")
         self.lcd.clear()
         self.lcd.write_string(self.top)
         self.lcd.cursor_pos = (1, 0)
