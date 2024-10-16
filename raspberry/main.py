@@ -1,7 +1,4 @@
-import sys
-import threading
 from logging import warning
-from time import sleep
 
 import chess.engine
 import serial
