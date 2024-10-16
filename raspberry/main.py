@@ -7,15 +7,12 @@ import serial
 import cmd_file
 import movehandlerfile
 import startpos
+from config import path, port
+from displayfile import DISPLAY
 from startpos import waitforpos
 from toolbox import boardtopos
-from displayfile import DISPLAY
-
-from config import path, port
 
 arduino = serial.Serial(port=port, baudrate=115200, timeout=.1)
-
-
 
 MH = movehandlerfile.MOVEHANDLER()
 CH = cmd_file.CMD_HANDLER()
@@ -24,7 +21,7 @@ board = chess.Board()
 engine = chess.engine.SimpleEngine.popen_uci(path)
 display = DISPLAY()
 
-startpos.waitforstartpos(arduino,)
+startpos.waitforstartpos(arduino, )
 
 while True:
     sleep(0.01)
@@ -58,25 +55,25 @@ while True:
 
                 else:
                     warning("invalid move")
-                    waitforpos(arduino, boardtopos(board),CH)
+                    waitforpos(arduino, boardtopos(board), CH)
 
             case _:
                 warning("unkown Beginning: " + strdata[0])
 
-    match CH.get_cmd():
-        case None:
-            pass
-        case "stop":
-            print("stopping")
-            break
+    if CH.cmd_ready():
+        print("CMD")
+        match CH.get_cmd():
+            case "stop":
+                print("stopping")
+                break
 
-        case "takeback":
-            board.pop()
-            bt = board.pop()
-            print(f"Deletet Move {bt}. Current Board State:")
-            print(board)
-            waitforpos(arduino, boardtopos(board),
-                       CH)
+            case "takeback":
+                board.pop()
+                bt = board.pop()
+                print(f"Deletet Move {bt}. Current Board State:")
+                print(board)
+                waitforpos(arduino, boardtopos(board),
+                           CH)
 
-        case _:
-            warning("Unknown Command. How did it get to main?")
+            case _:
+                warning("Unknown Command. How did it get to main?")
