@@ -1,15 +1,19 @@
 from logging import warning
 
 import chess.engine
+import chess.pgn
+
 import serial
+from config import path, port#, pngdir
 
 import cmd_file
 import movehandlerfile
 import startpos
-from config import path, port
 from displayfile import DISPLAY
 from startpos import waitforpos
-from toolbox import boardtopos
+from toolbox import boardtopos, get_playmode
+
+PlayerColor = get_playmode()
 
 arduino = serial.Serial(port=port, baudrate=115200, timeout=.1)
 arduino.reset_input_buffer()
@@ -26,9 +30,18 @@ display.write()
 
 startpos.waitforstartpos(arduino, CH)
 
+if PlayerColor == "black":
+    result = engine.play(board, chess.engine.Limit(time=0.1))
+    board.push(result.move)
+    print(board)
+    print("---")
+    display.set_bottom("COM Move: " + result.move.uci())
+    display.write()
+    waitforpos(arduino, boardtopos(board), CH, chess.square_name(result.move.to_square), )
+
 while True:
 
-    #sleep(0.01)
+    # sleep(0.01)
     if arduino.in_waiting != 0:
         data = arduino.readline()
         strdata = data.decode("utf-8").strip()
@@ -46,17 +59,27 @@ while True:
                     print(move)
                     if move in board.legal_moves:
                         board.push(move)
-                        print(board)
-                        print("---")
                         display.set_top("Your Move: " + sMove)
 
-                        result = engine.play(board, chess.engine.Limit(time=0.1))
-                        board.push(result.move)
-                        print(board)
-                        print("---")
-                        display.set_bottom("COM Move: " + result.move.uci())
-                        display.write()
-                        waitforpos(arduino, boardtopos(board), CH, chess.square_name(result.move.to_square), )
+                        if board.is_game_over():
+                            break
+
+                        if PlayerColor != "both":
+                            result = engine.play(board, chess.engine.Limit(time=0.1))
+                            board.push(result.move)
+                            print(board)
+                            print("---")
+                            display.set_bottom("COM Move: " + result.move.uci())
+                            display.write()
+                            waitforpos(arduino, boardtopos(board), CH, chess.square_name(result.move.to_square), )
+                            if board.is_game_over():
+                                break
+
+                        else:
+                            print(board)
+                            print("---")
+                            waitforpos(arduino, boardtopos(board), CH)
+
 
                 else:
                     warning("invalid move")
@@ -66,14 +89,16 @@ while True:
                 warning("unkown Beginning: " + strdata[0])
 
     if CH.cmd_ready():
-        #print("CMD")
+        # print("CMD")
         match CH.get_cmd():
             case "stop":
                 print("stopping")
                 break
 
             case "takeback":
-                board.pop()
+                if PlayerColor != "both":
+                    board.pop()
+
                 bt = board.pop()
                 print(f"Deletet Move {bt}. Current Board State:")
                 print(board)
@@ -83,6 +108,19 @@ while True:
             case _:
                 warning("Unknown Command. How did it get to main?")
 
+CH.cmd_close()
+
+"""
+
+i = input("Export Game?")
+
+if i == "y" or i == "yes":
+
+
+    game = chess.pgn.Game.from_board(board)
+    with open(pngdir)
+
+"""
 engine.close()
 display.close()
-CH.cmd_close()
+

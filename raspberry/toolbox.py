@@ -1,4 +1,5 @@
 import logging
+import random
 
 import chess
 import serial
@@ -66,3 +67,26 @@ def boardtopos(b: Board):
         res.append(chess.square_name(i))
 
     return res
+
+
+def get_playmode():
+    while True:
+        i = input("What do you want to play?")
+        match i:
+            case "w" | "white":
+                return "white"
+
+            case "b" | "black":
+                return "black"
+
+
+            case "x":
+                return random.choice(["white", "black"])
+
+
+            case "o" | "over Board":
+                return "both"
+
+
+            case _:
+                print("Invalid Mode")
