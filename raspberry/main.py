@@ -1,10 +1,12 @@
+import os
+from datetime import datetime
 from logging import warning
 
 import chess.engine
 import chess.pgn
 
 import serial
-from config import path, port#, pngdir
+from config import path, port, pngdir
 
 import cmd_file
 import movehandlerfile
@@ -12,6 +14,8 @@ import startpos
 from displayfile import DISPLAY
 from startpos import waitforpos
 from toolbox import boardtopos, get_playmode
+
+now = datetime.now()
 
 PlayerColor = get_playmode()
 
@@ -110,17 +114,24 @@ while True:
 
 CH.cmd_close()
 
-"""
+
 
 i = input("Export Game?")
 
 if i == "y" or i == "yes":
 
+    filename = "chessgame-" + now.strftime("%Y-%m-%d-%H-%M") + ".pgn"
+
+    com_filename = os.path.join(pngdir,filename)
 
     game = chess.pgn.Game.from_board(board)
-    with open(pngdir)
 
-"""
+    with open(com_filename,"w") as f:
+        exporter = chess.pgn.FileExporter(f)
+        game.accept(exporter)
+
+    print("Saved game at:",com_filename)
+
 engine.close()
 display.close()
 
