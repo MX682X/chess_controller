@@ -6,7 +6,7 @@ import serial
 import cmd_file
 import movehandlerfile
 import startpos
-from config import path, port
+from config import path, port,dispport
 from displayfile import DISPLAY
 from startpos import waitforpos
 from toolbox import boardtopos
@@ -19,7 +19,7 @@ CH = cmd_file.CMD_HANDLER()
 
 board = chess.Board()
 engine = chess.engine.SimpleEngine.popen_uci(path)
-display = DISPLAY()
+display = DISPLAY(dispport)
 
 display.set_top("Startposition")
 display.write()
