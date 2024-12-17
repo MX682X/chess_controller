@@ -6,7 +6,7 @@ import serial
 import cmd_file
 import movehandlerfile
 import startpos
-from config import path, port,dispport
+from config import path, port, dispport
 from displayfile import DISPLAY
 from startpos import waitforpos
 from toolbox import boardtopos
@@ -28,7 +28,7 @@ startpos.waitforstartpos(arduino, CH)
 
 while True:
 
-    #sleep(0.01)
+    # sleep(0.01)
     if arduino.in_waiting != 0:
         data = arduino.readline()
         strdata = data.decode("utf-8").strip()
@@ -48,13 +48,13 @@ while True:
                         board.push(move)
                         print(board)
                         print("---")
-                        display.set_top("Your Move: " + sMove)
+                        display.set_top("Your Move:\n" + sMove)
 
                         result = engine.play(board, chess.engine.Limit(time=0.1))
                         board.push(result.move)
                         print(board)
                         print("---")
-                        display.set_bottom("COM Move: " + result.move.uci())
+                        display.set_bottom("COM Move:\n" + result.move.uci())
                         display.write()
                         waitforpos(arduino, boardtopos(board), CH, chess.square_name(result.move.to_square), )
 
@@ -66,7 +66,7 @@ while True:
                 warning("unkown Beginning: " + strdata[0])
 
     if CH.cmd_ready():
-        #print("CMD")
+        # print("CMD")
         match CH.get_cmd():
             case "stop":
                 print("stopping")

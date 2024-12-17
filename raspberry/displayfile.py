@@ -6,7 +6,7 @@ class DISPLAY:
         self.top = ""
         self.bottom = ""
 
-        self.conn = serial.Serial(port=port, baudrate=115200, timeout=.1)
+        self.conn = serial.Serial(port=port, baudrate=9600, timeout=.1)
 
     def write(self):
         self.conn.write(b"clr\n")
@@ -14,7 +14,6 @@ class DISPLAY:
         w = self.top + "\n" + self.bottom + "\n"
         self.conn.write(w.encode('utf-8'))
 
-        print(f"wrote {w} end")
 
     # print("writing")
 
