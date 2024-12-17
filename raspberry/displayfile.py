@@ -14,7 +14,7 @@ class DISPLAY:
         w = self.top + "\n" + self.bottom + "\n"
         self.conn.write(w.encode('utf-8'))
 
-        print(f"wrote {w}")
+        print(f"wrote {w} end")
 
     # print("writing")
 
