@@ -80,6 +80,20 @@ while True:
                 waitforpos(arduino, boardtopos(board),
                            CH)
 
+            case "stable":
+                display.set_top("Geting to stable")
+                display.set_bottom("")
+                display.write()
+                print("How it should Look:")
+                print(board)
+
+                waitforpos(arduino, boardtopos(board), )
+                MH.clear()
+
+                display.set_top("Stable")
+                display.write()
+                print("now we are good!")
+
             case _:
                 warning("Unknown Command. How did it get to main?")
 
