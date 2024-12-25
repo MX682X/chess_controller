@@ -22,7 +22,7 @@ void lv_create_s_1_1(lv_obj_t* parent) {
   //Resing Button
   lv_obj_t* Resing_bttn = lv_button_create(parent);
   lv_obj_align(Resing_bttn, LV_ALIGN_RIGHT_MID, -10, 0);
-  lv_obj_add_event_cb(Resing_bttn, resing_btn_callback, LV_EVENT_CLICKED, NULL);
+  lv_obj_add_event_cb(Resing_bttn, btn_1_1_callback, LV_EVENT_CLICKED, RES_Text);
 
 
   lv_obj_t* Resing_bttn_lable = lv_label_create(Resing_bttn);
@@ -31,7 +31,7 @@ void lv_create_s_1_1(lv_obj_t* parent) {
   //Stable button
   lv_obj_t* stable_bttn = lv_button_create(parent);
   lv_obj_align(stable_bttn, LV_ALIGN_BOTTOM_RIGHT, -10, -10);
-  lv_obj_add_event_cb(stable_bttn, stable_btn_callback, LV_EVENT_CLICKED, NULL);
+  lv_obj_add_event_cb(stable_bttn, btn_1_1_callback, LV_EVENT_CLICKED, STB_Text);
 
 
   lv_obj_t* stable_bttn_lable = lv_label_create(stable_bttn);
@@ -61,16 +61,7 @@ void lable_1_1_rm() {
     lv_label_set_text(lable_1_1, lable_1_1_text.c_str());
   }
 }
-static void TB_btn_callback(lv_event_t* e) {
-  Serial.println("COM:BTN1_1:TB");
-}
 
-static void resing_btn_callback(lv_event_t* e) {
-  Serial.println("COM:BTN1_1:RES");
-}
-static void stable_btn_callback(lv_event_t* e) {
-  Serial.println("COM:BTN1_1:STB");
-}
 
 static void btn_1_1_callback(lv_event_t* e) {
 
