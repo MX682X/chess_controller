@@ -32,10 +32,12 @@ int x, y, z;
 #define DRAW_BUF_SIZE (SCREEN_WIDTH * SCREEN_HEIGHT / 10 * (LV_COLOR_DEPTH / 8))
 uint32_t draw_buf[DRAW_BUF_SIZE / 4];
 
-bool secondscreen = false;
 uint32_t lastTick = 0;  //Used to track the tick timer
 
+enum Scenes { S1_0,
+              S1_1 };
 
+Scenes activeScene;
 
 
 // Get the Touchscreen data
@@ -71,6 +73,7 @@ void touchscreen_read(lv_indev_t* indev, lv_indev_data_t* data) {
 
 void lv_create_main_gui(void) {
   lv_create_s_1_0(lv_screen_active());
+  activeScene = S1_0;
 }
 
 
@@ -113,6 +116,25 @@ void loop() {
     String myString = Serial.readStringUntil('\n');
     myString.trim();
     //do Something wit Serial
+    switch (activeScene) {
+      case S1_0:
+        if (myString == "COM:SC:1_1") {
+          transition_s_1_1();
+        }
+        break;
+      case S1_1:
+        if (myString == "rm") {
+          lable_1_1_rm();
+        } else if (myString == "clr") {
+          lable_1_1_clear();
+        } else {
+          lable_1_1_push(myString);
+        }
+        break;
+      default:
+        LV_LOG_ERROR("Reached invalid Scene");
+        break;
+    }
   }
 
 
