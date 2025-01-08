@@ -1,7 +1,7 @@
 import queue
 import threading
 
-cmdlist = ["stop","takeback"]
+cmdlist = ["stop","takeback","stable"]
 
 
 

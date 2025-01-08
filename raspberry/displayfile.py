@@ -1,20 +1,21 @@
-from RPLCD.gpio import CharLCD
-from RPi import GPIO
+import serial
 
 
 class DISPLAY:
-    def __init__(self):
+    def __init__(self, port):
         self.top = ""
         self.bottom = ""
-        self.lcd = CharLCD(pin_rs=15, pin_rw=18, pin_e=16, pins_data=[21, 22, 23, 24],
-              numbering_mode=GPIO.BOARD, cols=16, rows=2)
+
+        self.conn = serial.Serial(port=port, baudrate=9600, timeout=.1)
 
     def write(self):
-        #print("writing")
-        self.lcd.clear()
-        self.lcd.write_string(self.top)
-        self.lcd.cursor_pos = (1, 0)
-        self.lcd.write_string(self.bottom)
+        self.conn.write(b"clr\n")
+
+        w = self.top + "\n" + self.bottom + "\n"
+        self.conn.write(w.encode('utf-8'))
+
+
+    # print("writing")
 
     def set_top(self, s):
         self.top = s
@@ -23,4 +24,6 @@ class DISPLAY:
         self.bottom = s
 
     def close(self):
-        self.lcd.close(clear = True)
+        self.conn.write(b"clr\n")
+        self.conn.write(b"Connection closed\n")
+        self.conn.close()

@@ -11,6 +11,7 @@ from config import path, port, pngdir
 import cmd_file
 import movehandlerfile
 import startpos
+from config import path, port, dispport
 from displayfile import DISPLAY
 from startpos import waitforpos
 from toolbox import boardtopos, get_playmode
@@ -27,7 +28,7 @@ CH = cmd_file.CMD_HANDLER()
 
 board = chess.Board()
 engine = chess.engine.SimpleEngine.popen_uci(path)
-display = DISPLAY()
+display = DISPLAY(dispport)
 
 display.set_top("Startposition")
 display.write()
@@ -63,7 +64,7 @@ while True:
                     print(move)
                     if move in board.legal_moves:
                         board.push(move)
-                        display.set_top("Your Move: " + sMove)
+                        display.set_top("Your Move:\n" + sMove)
 
                         if board.is_game_over():
                             break
@@ -73,7 +74,7 @@ while True:
                             board.push(result.move)
                             print(board)
                             print("---")
-                            display.set_bottom("COM Move: " + result.move.uci())
+                            display.set_bottom("COM Move:\n" + result.move.uci())
                             display.write()
                             waitforpos(arduino, boardtopos(board), CH, chess.square_name(result.move.to_square), )
                             if board.is_game_over():
@@ -83,7 +84,6 @@ while True:
                             print(board)
                             print("---")
                             waitforpos(arduino, boardtopos(board), CH)
-
 
                 else:
                     warning("invalid move")
@@ -108,6 +108,20 @@ while True:
                 print(board)
                 waitforpos(arduino, boardtopos(board),
                            CH)
+
+            case "stable":
+                display.set_top("Geting to stable")
+                display.set_bottom("")
+                display.write()
+                print("How it should Look:")
+                print(board)
+
+                waitforpos(arduino, boardtopos(board), )
+                MH.clear()
+
+                display.set_top("Stable")
+                display.write()
+                print("now we are good!")
 
             case _:
                 warning("Unknown Command. How did it get to main?")
