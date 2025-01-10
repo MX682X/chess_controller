@@ -1,24 +1,22 @@
 import os
+import random
 from datetime import datetime
 from logging import warning
 
 import chess.engine
 import chess.pgn
-
 import serial
-from config import path, port, pngdir
 
 import cmd_file
 import movehandlerfile
 import startpos
 from config import path, port, dispport
+#from config import pngdir
 from displayfile import DISPLAY
 from startpos import waitforpos
-from toolbox import boardtopos, get_playmode
+from toolbox import boardtopos
 
 now = datetime.now()
-
-PlayerColor = get_playmode()
 
 arduino = serial.Serial(port=port, baudrate=115200, timeout=.1)
 arduino.reset_input_buffer()
@@ -30,18 +28,32 @@ board = chess.Board()
 engine = chess.engine.SimpleEngine.popen_uci(path)
 display = DISPLAY(dispport)
 
-display.set_top("Startposition")
-display.write()
+
+PlayerColor = display.Waitforgamemode()
+
+print(PlayerColor)
+
+if PlayerColor == "Random":
+    PlayerColor = random.choice(["white", "black"])
+
+display.setscene("1_1")
+
+display.Addline("Waiting for Startposition")
+
+print("Hey")
 
 startpos.waitforstartpos(arduino, CH)
+
+print("ho")
+
+display.Clearlines()
 
 if PlayerColor == "black":
     result = engine.play(board, chess.engine.Limit(time=0.1))
     board.push(result.move)
     print(board)
     print("---")
-    display.set_bottom("COM Move: " + result.move.uci())
-    display.write()
+    display.Addline("COM Move: " + result.move.uci())
     waitforpos(arduino, boardtopos(board), CH, chess.square_name(result.move.to_square), )
 
 while True:
@@ -64,7 +76,7 @@ while True:
                     print(move)
                     if move in board.legal_moves:
                         board.push(move)
-                        display.set_top("Your Move:\n" + sMove)
+                        display.Addline("Your Move:" + sMove)
 
                         if board.is_game_over():
                             break
@@ -74,8 +86,8 @@ while True:
                             board.push(result.move)
                             print(board)
                             print("---")
-                            display.set_bottom("COM Move:\n" + result.move.uci())
-                            display.write()
+                            display.Addline("COM Move: " + result.move.uci())
+
                             waitforpos(arduino, boardtopos(board), CH, chess.square_name(result.move.to_square), )
                             if board.is_game_over():
                                 break
@@ -92,9 +104,17 @@ while True:
             case _:
                 warning("unkown Beginning: " + strdata[0])
 
+    activecmdlist = []
+
     if CH.cmd_ready():
         # print("CMD")
-        match CH.get_cmd():
+        activecmdlist.append(CH.get_cmd())
+
+    if display.button_Cmd_ready():
+        activecmdlist.append(display.get_button_Cmc())
+
+    while len(activecmdlist) != 0:
+        match activecmdlist.pop():
             case "stop":
                 print("stopping")
                 break
@@ -110,17 +130,14 @@ while True:
                            CH)
 
             case "stable":
-                display.set_top("Geting to stable")
-                display.set_bottom("")
-                display.write()
+                display.Addline("Stabilising")
                 print("How it should Look:")
                 print(board)
 
                 waitforpos(arduino, boardtopos(board), )
                 MH.clear()
 
-                display.set_top("Stable")
-                display.write()
+                display.Removeline()
                 print("now we are good!")
 
             case _:
@@ -128,24 +145,24 @@ while True:
 
 CH.cmd_close()
 
-
+"""
 
 i = input("Export Game?")
 
 if i == "y" or i == "yes":
-
     filename = "chessgame-" + now.strftime("%Y-%m-%d-%H-%M") + ".pgn"
 
-    com_filename = os.path.join(pngdir,filename)
+    com_filename = os.path.join(pngdir, filename)
 
     game = chess.pgn.Game.from_board(board)
 
-    with open(com_filename,"w") as f:
+    with open(com_filename, "w") as f:
         exporter = chess.pgn.FileExporter(f)
         game.accept(exporter)
 
-    print("Saved game at:",com_filename)
+    print("Saved game at:", com_filename)
+    
+"""
 
 engine.close()
 display.close()
-
