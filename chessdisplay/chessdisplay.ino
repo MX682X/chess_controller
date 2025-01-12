@@ -109,6 +109,8 @@ void setup() {
 
   // Function to draw the GUI (text, buttons and sliders)
   lv_create_main_gui();
+
+  Serial.println("Startup complete");
 }
 
 void loop() {
@@ -121,6 +123,11 @@ void loop() {
       transition_s_0();
       return;
     }
+    if (myString == "COM:reboot") {
+      ESP.restart();
+    }
+
+
     if (myString == "COM:SC:1_1") {
       transition_s_1_1();
     }
