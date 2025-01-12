@@ -1,12 +1,23 @@
 import logging
+from time import sleep
 
 import serial
 
 
 class DISPLAY:
     def __init__(self, port):
-        self.scene = "0"
+
+        serial.Serial(port=port, baudrate=115200, timeout=.1).write(b"COM:reboot\n")
+
+        sleep(0.01)
         self.conn = serial.Serial(port=port, baudrate=115200, timeout=.1)
+        while True:
+            if self.conn.in_waiting != 0:
+                data = self.conn.readline()
+                strdata = data.decode("utf-8").strip()
+                if strdata == "Startup complete":
+                    break
+        self.scene = "0"
 
     def setscene(self, scene):
         if scene != self.scene:
@@ -38,7 +49,7 @@ class DISPLAY:
 
     def Addline(self, line: str):
         if self.scene == "1_1":
-            self.conn.write(("COM:1_1:push:"+line + "\n").encode("utf-8"))
+            self.conn.write(("COM:1_1:push:" + line + "\n").encode("utf-8"))
         else:
             logging.warning("Addline can only be used in Scene 1_1")
 

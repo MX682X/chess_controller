@@ -41,11 +41,9 @@ display.setscene("1_1")
 
 display.Addline("Waiting for Startposition")
 
-print("Hey")
 
 startpos.waitforstartpos(arduino, CH)
 
-print("ho")
 
 display.Clearlines()
 
