@@ -69,9 +69,13 @@ static void btn_1_1_callback(lv_event_t* e) {
   Serial.println((char*)lv_event_get_user_data(e));
 }
 
-void transition_s_1_1(){
+void transition_s_1_1() {
+  if (activeScene == S1_1) {
+    return;
+  }
+
   lv_obj_t* scene_1_1 = lv_obj_create(NULL);
   lv_create_s_1_1(scene_1_1);
-  lv_screen_load_anim(scene_1_1,LV_SCR_LOAD_ANIM_MOVE_TOP,1000,0,true);
+  lv_screen_load_anim(scene_1_1, LV_SCR_LOAD_ANIM_MOVE_TOP, 1000, 0, true);
   activeScene = S1_1;
 }

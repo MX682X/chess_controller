@@ -34,7 +34,8 @@ uint32_t draw_buf[DRAW_BUF_SIZE / 4];
 
 uint32_t lastTick = 0;  //Used to track the tick timer
 
-enum Scenes { S1_0,
+enum Scenes { S0,
+              S1_0,
               S1_1 };
 
 Scenes activeScene;
@@ -72,8 +73,8 @@ void touchscreen_read(lv_indev_t* indev, lv_indev_data_t* data) {
 
 
 void lv_create_main_gui(void) {
-  lv_create_s_1_0(lv_screen_active());
-  activeScene = S1_0;
+  lv_create_s_0(lv_screen_active());
+  activeScene = S0;
 }
 
 
@@ -116,19 +117,31 @@ void loop() {
     String myString = Serial.readStringUntil('\n');
     myString.trim();
     //do Something wit Serial
+    if (myString == "COM:discon") {
+      transition_s_0();
+      return;
+    }
+    if (myString == "COM:SC:1_1") {
+      transition_s_1_1();
+    }
+    if (myString == "COM:SC:1_0") {
+      transition_s_1_0();
+    }
+
     switch (activeScene) {
+      case S0:
+
+        break;
       case S1_0:
-        if (myString == "COM:SC:1_1") {
-          transition_s_1_1();
-        }
+
         break;
       case S1_1:
-        if (myString == "rm") {
+        if (myString == "COM:1_1:rm") {
           lable_1_1_rm();
-        } else if (myString == "clr") {
+        } else if (myString == "COM:1_1:clr") {
           lable_1_1_clear();
-        } else {
-          lable_1_1_push(myString);
+        } else if (myString.startsWith("COM:1_1:push:")) {
+          lable_1_1_push(myString.substring(13));
         }
         break;
       default:
