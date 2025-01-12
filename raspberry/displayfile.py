@@ -38,19 +38,19 @@ class DISPLAY:
 
     def Addline(self, line: str):
         if self.scene == "1_1":
-            self.conn.write(line.encode("utf-8"))
+            self.conn.write((line + "\n").encode("utf-8"))
         else:
             logging.warning("Addline can only be used in Scene 1_1")
 
     def Removeline(self):
         if self.scene == "1_1":
-            self.conn.write(b"rm")
+            self.conn.write(b"rm\n")
         else:
             logging.warning("Removeline can only be used in Scene 1_1")
 
     def Clearlines(self):
         if self.scene == "1_1":
-            self.conn.write(b"clr")
+            self.conn.write(b"clr\n")
         else:
             logging.warning("Clearline can only be used in Scene 1_1")
 
