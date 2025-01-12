@@ -6,9 +6,10 @@ char STB_Text[] = "STB";
 
 void lv_create_s_1_1(lv_obj_t* parent) {
   //lable
-  lable_1_1 = lv_label_create(parent);
-  lv_obj_set_width(lable_1_1, lv_pct(50));
-  lv_label_set_text(lable_1_1, "Hello World \n grüezi miteinander");
+  lv_obj_t* lable_1_1_parent = lv_obj_create(parent);
+  lable_1_1 = lv_label_create(lable_1_1_parent);
+  lv_obj_set_width(lable_1_1_parent, lv_pct(50));
+  lv_label_set_text(lable_1_1, "Hello World \n gruezi miteinander");
 
   //TBbutton
   lv_obj_t* TB_bttn = lv_button_create(parent);

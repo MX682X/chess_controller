@@ -49,13 +49,16 @@ class DISPLAY:
 
     def Addline(self, line: str):
         if self.scene == "1_1":
-            self.conn.write(("COM:1_1:push:" + line + "\n").encode("utf-8"))
+            linelist = line.split()
+            for l  in linelist:
+                self.conn.write(("COM:1_1:push:" + l + "\n").encode("utf-8"))
         else:
             logging.warning("Addline can only be used in Scene 1_1")
 
-    def Removeline(self):
+    def Removeline(self,num = 1):
         if self.scene == "1_1":
-            self.conn.write(b"COM:1_1:rm\n")
+            for _ in range(num):
+                self.conn.write(b"COM:1_1:rm\n")
         else:
             logging.warning("Removeline can only be used in Scene 1_1")
 

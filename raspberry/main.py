@@ -123,10 +123,10 @@ while True:
                     board.pop()
 
                 bt = board.pop()
+                display.Removeline(num=2)
                 print(f"Deletet Move {bt}. Current Board State:")
                 print(board)
-                waitforpos(arduino, boardtopos(board),
-                           CH)
+                waitforpos(arduino, boardtopos(board),CH)
 
             case "stable":
                 display.Addline("Stabilising")
