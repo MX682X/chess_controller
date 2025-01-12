@@ -17,6 +17,7 @@ from startpos import waitforpos
 from toolbox import boardtopos
 
 now = datetime.now()
+exitflag = False
 
 arduino = serial.Serial(port=port, baudrate=115200, timeout=.1)
 arduino.reset_input_buffer()
@@ -117,7 +118,7 @@ while True:
         match activecmdlist.pop():
             case "stop":
                 print("stopping")
-                break
+                exitflag = True
 
             case "takeback":
                 if PlayerColor != "both":
@@ -142,6 +143,11 @@ while True:
 
             case _:
                 warning("Unknown Command. How did it get to main?")
+
+
+    if exitflag:
+        break
+
 
 CH.cmd_close()
 
