@@ -5,13 +5,12 @@ import serial
 
 class DISPLAY:
     def __init__(self, port):
-        self.scene = "1_0"
-        self.conn = serial.Serial(port=port, baudrate=9600, timeout=.1)
+        self.scene = "0"
+        self.conn = serial.Serial(port=port, baudrate=115200, timeout=.1)
 
     def setscene(self, scene):
         if scene != self.scene:
             s = "COM:SC:" + scene + "\n"
-            print(s.encode("utf-8"))
             self.conn.write(s.encode("utf-8"))
             self.scene = scene
         else:
@@ -19,6 +18,7 @@ class DISPLAY:
 
     # SCENE 1_0
     def Waitforgamemode(self):
+        self.setscene("1_0")
         while True:
             if self.conn.in_waiting != 0:
                 data = self.conn.readline()
@@ -79,4 +79,5 @@ class DISPLAY:
             logging.warning(f"Expected buttoncommand from scene 1_1. Got: {strdata}")
 
     def close(self):
+        self.conn.write(b"COM:discon\n")
         self.conn.close()
