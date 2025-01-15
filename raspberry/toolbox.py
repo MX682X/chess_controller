@@ -19,8 +19,8 @@ def parseR(rlist: list[str]):
                     placed.append(chr(col + 96) + str(row))
                 case "_":
                     pass
-                case _:
-                    logging.warning(f"Expectet to find x or _. Found {x}")
+                case y:
+                    logging.warning(f"Expectet to find x or _. Found {y}")
 
         row -= 1
     return placed
