@@ -36,7 +36,8 @@ uint32_t lastTick = 0;  //Used to track the tick timer
 
 enum Scenes { S0,
               S1_0,
-              S1_1 };
+              S1_1,
+              S1_2 };
 
 Scenes activeScene;
 
@@ -133,6 +134,10 @@ void loop() {
     }
     if (myString == "COM:SC:1_0") {
       transition_s_1_0();
+    }
+    if(myString.startsWith("COM:SC:1_2:")){
+      transition_s_1_2(myString.substring(11));
+      return;
     }
 
     switch (activeScene) {
