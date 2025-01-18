@@ -49,7 +49,7 @@ class DISPLAY:
 
     def Addline(self, line: str):
         if self.scene == "1_1":
-            linelist = line.split()
+            linelist = line.split("\n")
             for l  in linelist:
                 self.conn.write(("COM:1_1:push:" + l + "\n").encode("utf-8"))
         else:
