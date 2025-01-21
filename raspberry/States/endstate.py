@@ -1,3 +1,6 @@
+import logging
+from typing import TYPE_CHECKING
+
 import chess
 
 # Hack for IDE Support
@@ -6,10 +9,12 @@ if False:
 
 
 class endstate:
-    def __init__(self, machine: Machine):
+    def __init__(self, machine: "Machine"):
         self.machine = machine
 
     def activate(self):
+        logging.info("Activating endstate")
+
         self.machine.State = self
 
         if self.machine.board.is_checkmate():

@@ -1,4 +1,5 @@
 import logging
+from typing import TYPE_CHECKING
 
 # Hack for IDE Support
 if False:
@@ -6,13 +7,14 @@ if False:
 
 
 class stablestate:
-    def __init__(self, machine: Machine):
+    def __init__(self, machine: "Machine"):
         self.istpos = None
         self.fehlt = None
         self.zuviel = None
         self.machine = machine
 
     def activate(self, extraturnon=None):
+        logging.info("Activating Stablestate")
         self.machine.State = self
 
         self.machine.leds.clrall()
@@ -39,6 +41,9 @@ class stablestate:
 
         if self.fehlt == [] and self.zuviel == []:
             self.machine.movestate.activate()
+            return
+
+        print(self.machine.board)
 
     def place(self, field):
 

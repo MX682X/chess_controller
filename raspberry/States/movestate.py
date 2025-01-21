@@ -1,4 +1,6 @@
+import logging
 from logging import warning
+from typing import TYPE_CHECKING
 
 import chess
 
@@ -8,10 +10,11 @@ if False:
 
 
 class movestate:
-    def __init__(self, machine: Machine):
+    def __init__(self, machine: "Machine"):
         self.machine = machine
 
     def activate(self):
+        logging.info("Activating movestate")
         if self.machine.COMstart:
             result = self.machine.engine.play(self.machine.board, chess.engine.Limit(time=0.1))
             self.machine.board.push(result.move)

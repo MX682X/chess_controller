@@ -73,7 +73,7 @@ class DISPLAY:
         self.Addline(line)
 
     def button_Cmd_ready(self):
-        return self.conn.in_waiting != 0 and self.scene == "1_1"
+        return self.conn.in_waiting != 0
 
     def get_button_Cmc(self):
         if not self.button_Cmd_ready():
@@ -89,6 +89,8 @@ class DISPLAY:
                     return "Resign"
                 case "COM:BTN1_1:STB":
                     return "stable"
+        elif strdata.startswith("COM:BTN1_0:"):
+            return strdata[-2:]
         else:
             logging.warning(f"Expected buttoncommand from scene 1_1. Got: {strdata}")
 
