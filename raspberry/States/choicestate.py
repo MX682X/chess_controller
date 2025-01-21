@@ -2,7 +2,9 @@ from random import choice
 
 import chess
 
-from statemachine import Machine
+# Hack for IDE Support
+if False:
+    from statemachine import Machine
 
 
 class Choicestate:

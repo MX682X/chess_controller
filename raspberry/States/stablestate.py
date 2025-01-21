@@ -1,9 +1,11 @@
 import logging
 
-from statemachine import State, Machine
+# Hack for IDE Support
+if False:
+    from statemachine import Machine
 
 
-class stablestate(State):
+class stablestate:
     def __init__(self, machine: Machine):
         self.istpos = None
         self.fehlt = None

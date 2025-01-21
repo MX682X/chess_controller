@@ -2,10 +2,12 @@ from logging import warning
 
 import chess
 
-from statemachine import State, Machine
+# Hack for IDE Support
+if False:
+    from statemachine import Machine
 
 
-class movestate(State):
+class movestate:
     def __init__(self, machine: Machine):
         self.machine = machine
 
