@@ -31,10 +31,18 @@ class Choicestate:
     def cblack(self):
         self.machine.COMstart = True
         self.machine.board = chess.Board()
+
+        self.machine.display.setscene("1_1")
+        self.machine.display.Addline("Waiting for Startposition")
+
         self.machine.stablestate.activate()
 
     def cwhite(self):
         self.machine.board = chess.Board()
+
+        self.machine.display.setscene("1_1")
+        self.machine.display.Addline("Waiting for Startposition")
+
         self.machine.stablestate.activate()
 
     def crand(self):
