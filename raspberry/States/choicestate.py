@@ -3,12 +3,14 @@ from random import choice
 
 import chess
 
+import States.basestate
+
 # Hack for IDE Support
 if False:
     from statemachine import Machine
 
 
-class Choicestate:
+class Choicestate(States.basestate.State):
     def __init__(self, machine: "Machine"):
         self.machine = machine
 
@@ -18,20 +20,7 @@ class Choicestate:
         self.machine.State = self
         self.machine.display.setscene("1_0")
 
-    def place(self, pos):
-        pass
 
-    def take(self, pos):
-        pass
-
-    def stop(self):
-        pass
-
-    def takeback(self):
-        pass
-
-    def Stabilise(self):
-        pass
 
     def cblack(self):
         self.machine.COMstart = True

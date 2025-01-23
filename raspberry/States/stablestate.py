@@ -1,12 +1,13 @@
 import logging
-from typing import TYPE_CHECKING
+
+import States.basestate
 
 # Hack for IDE Support
 if False:
     from statemachine import Machine
 
 
-class stablestate:
+class stablestate(States.basestate.State):
     def __init__(self, machine: "Machine"):
         self.istpos = None
         self.fehlt = None
@@ -70,8 +71,6 @@ class stablestate:
         if self.fehlt == [] and self.zuviel == []:
             self.machine.movestate.activate()
 
-    def stop(self):
-        pass
 
     def takeback(self):
         self.machine.board.pop()

@@ -80,24 +80,3 @@ def parseR(rlist: list[str]):
     return placed
 
 
-class State:
-    def __init__(self, machine: Machine):
-        self.machine = machine
-
-    def activate(self):
-        raise NotImplementedError
-
-    def place(self, pos):
-        raise NotImplementedError
-
-    def take(self, pos):
-        raise NotImplementedError
-
-    def stop(self):
-        raise NotImplementedError
-
-    def takeback(self):
-        raise NotImplementedError
-
-    def Stabilise(self):
-        raise NotImplementedError
