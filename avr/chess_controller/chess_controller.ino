@@ -37,9 +37,14 @@ uint8_t led_matrix[] = {
 
 
 uint8_t reed_matrix[8][8] = {};
-uint8_t new_reed[8] = {};
+// Current state of the Piece at that position. 
+//~60 means its currently not there. At >80 it flips
+//~140 means its currently there. At <120 it flips.
 
-uint8_t serial_buffer[8] = { 0x00 };
+uint8_t reed_bool[8] = {};
+// Each Bit represents the current state of the reed Contact. (1= Active)
+
+uint8_t serial_input_buffer[8] = { 0x00 };
 uint8_t serial_position = 0;
 
 
@@ -74,7 +79,7 @@ void setup() {
 }
 
 void loop() {
-  uint8_t output_buffer[5] = {};  // keep in stack for faster access
+  uint8_t serial_output_buffer[5] = {};  // keep in stack for faster access
   /*
   cli();                          // ISR guard
   uint8_t flags = ACQ_STATUS;
@@ -101,14 +106,22 @@ void loop() {
     }
   }
   */
+
+
+  // change reed_matrix according to reed_bool
+  // increase if active, decrease when inactive
+  // no overflow (>150) or underflow (<50)
+
   if (ACQ_STATUS & 0x01) {                   // all lines scanned
     ACQ_STATUS &= ~0x01;                // clear Flag
-    uint8_t *pNewReed = &new_reed[0];
+    uint8_t *pNewReed = &reed_bool[0];
     uint8_t *pOldReed = &reed_matrix[0][0];
     for (uint8_t i = 0; i < 8; i++) {
       uint8_t newReed = *(pNewReed++);
       for (uint8_t j = 0; j < 8; j++) {
         uint8_t value = *pOldReed;
+        //value = reed_matrix[i][j]
+        //newReed = reed_bool[i] >> j
         if(newReed & 0x01) {
           if (value < 150)
             value += 1;
@@ -120,7 +133,11 @@ void loop() {
         newReed >>= 1;
       }
     }
-    if (++all_lines_counter >= 24) {    // 24 iterations
+
+
+    // Check if reed_matrix has to flip else reset to base value (60 if no piece is there, 140 otherwise)
+
+    if (++all_lines_counter >= 24) {    // 24 iterations 
       all_lines_counter = 0;
       uint8_t *reed = &reed_matrix[0][0];
       
@@ -142,24 +159,24 @@ void loop() {
           if (counter >= 100) {       // count up
             if (counter <= 120) {     // counted "20 down"
               counter = 60;           // piece removed
-              output_buffer[0] = PIECE_TAKEN;
-              output_buffer[1] = col;
-              output_buffer[2] = line;
-              output_buffer[3] = '\n';
-              output_buffer[4] = 0x00;
-              Serial.print((char *)output_buffer);
+              serial_output_buffer[0] = PIECE_TAKEN;
+              serial_output_buffer[1] = col;
+              serial_output_buffer[2] = line;
+              serial_output_buffer[3] = '\n';
+              serial_output_buffer[4] = 0x00;
+              Serial.print((char *)serial_output_buffer);
             } else {
               counter = 140;          // fall back to base
             }
           } else {
             if (counter >= 80) {      // counted "20 up"
               counter = 140;          // piece touched
-              output_buffer[0] = PIECE_PLACED;
-              output_buffer[1] = col;
-              output_buffer[2] = line;
-              output_buffer[3] = '\n';
-              output_buffer[4] = 0x00;
-              Serial.print((char *)output_buffer);
+              serial_output_buffer[0] = PIECE_PLACED;
+              serial_output_buffer[1] = col;
+              serial_output_buffer[2] = line;
+              serial_output_buffer[3] = '\n';
+              serial_output_buffer[4] = 0x00;
+              Serial.print((char *)serial_output_buffer);
             } else {
               counter = 60;
             }
@@ -178,9 +195,9 @@ void loop() {
       continue;
     else if (ch == '\n') {
       serial_position = 0;
-      uint8_t cmd = serial_buffer[0];
-      uint8_t letter = serial_buffer[1];
-      uint8_t number = serial_buffer[2] - '0';
+      uint8_t cmd = serial_input_buffer[0];
+      uint8_t letter = serial_input_buffer[1];
+      uint8_t number = serial_input_buffer[2] - '0';
 
       if (letter > 'Z') {
         letter -= 'a';
@@ -213,7 +230,7 @@ void loop() {
         }
       }
     } else {
-      serial_buffer[serial_position++] = ch;
+      serial_input_buffer[serial_position++] = ch;
     }
   }
 }
@@ -286,7 +303,7 @@ void boot_splash(void) {
 ISR(TCB4_INT_vect) {
   uint8_t line = CURR_LINE + 1;       // use GPIO Reg for faster access
   uint8_t com = COM_VPORT.OUT << 1;   // get current active com transistor
-  new_reed[line - 1]   = REED_VPORT.IN; // save reed info
+  reed_bool[line - 1]   = REED_VPORT.IN; // save reed info
   COM_VPORT.OUT = 0x00;               // disable com Transistors
   if (com == 0x00) {
     COM_VPORT.OUT = 0x01;             // enable first com transistor
