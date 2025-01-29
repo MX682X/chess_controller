@@ -22,7 +22,7 @@ class Machine:
         if startposition is None:
             self.board: chess.Board = chess.Board()
         else:
-            self.board: chess.Board = chess.Board()
+            self.board: chess.Board = chess.Board(startposition)
         self.engine = engine
         self.display = display
         self.Movehandler = MOVEHANDLER()
