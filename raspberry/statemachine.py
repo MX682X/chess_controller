@@ -29,12 +29,12 @@ class Machine:
         self.leds = ledboard(con)
         self.con = con
 
-        self.COMstart = False
-
         self.choicestate = States.choicestate.Choicestate(self)
         self.stablestate = States.stablestate.stablestate(self)
         self.movestate = States.movestate.movestate(self)
         self.endstate = States.endstate.endstate(self)
+
+        self.comcoluour: chess.Color = None;
 
         self.State = None
         self.choicestate.activate()

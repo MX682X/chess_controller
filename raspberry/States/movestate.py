@@ -16,18 +16,18 @@ class movestate(States.basestate.State):
 
     def activate(self):
         logging.info("Activating movestate")
-        if self.machine.COMstart:
-            result = self.machine.engine.play(self.machine.board, chess.engine.Limit(time=0.001))
+
+        if self.machine.board.is_game_over():
+            self.machine.endstate.activate()
+
+        if self.machine.board.turn == self.machine.comcoluour:
+            result = self.machine.engine.play(self.machine.board, chess.engine.Limit(time=0.01))
             self.machine.board.push(result.move)
 
             self.machine.display.Addline("COM Move: " + result.move.uci())
 
-            self.machine.COMstart = False
-            self.machine.stablestate.activate()
+            self.machine.stablestate.activate(chess.square_name(result.move.to_square))
             return
-
-        if self.machine.board.is_game_over():
-            self.machine.endstate.activate()
 
         self.machine.State = self
         self.machine.Movehandler.clear()
@@ -53,17 +53,7 @@ class movestate(States.basestate.State):
         print(move)
         self.machine.board.push(move)
         self.machine.display.Addline("Your Move:" + sMove)
-
-        if self.machine.board.is_game_over():
-            self.machine.endstate.activate()
-            return
-
-        result = self.machine.engine.play(self.machine.board, chess.engine.Limit(time=0.1))
-        self.machine.board.push(result.move)
-
-        self.machine.display.Addline("COM Move: " + result.move.uci())
-
-        self.machine.stablestate.activate(chess.square_name(result.move.to_square))
+        self.machine.stablestate.activate()
 
     def takeback(self):
         self.machine.board.pop()

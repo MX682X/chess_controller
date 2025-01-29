@@ -20,11 +20,8 @@ class Choicestate(States.basestate.State):
         self.machine.State = self
         self.machine.display.setscene("1_0")
 
-
-
     def cblack(self):
-        self.machine.COMstart = True
-
+        self.machine.comcoluour = chess.BLACK
 
         self.machine.display.setscene("1_1")
         self.machine.display.Addline("Waiting for Startposition")
@@ -32,6 +29,7 @@ class Choicestate(States.basestate.State):
         self.machine.stablestate.activate()
 
     def cwhite(self):
+        self.machine.comcoluour = chess.WHITE
 
         self.machine.display.setscene("1_1")
         self.machine.display.Addline("Waiting for Startposition")
