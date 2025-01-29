@@ -4,10 +4,9 @@ import chess.engine
 import serial
 
 import States.choicestate
+import States.endstate
 import States.movestate
 import States.stablestate
-import States.endstate
-
 import displayfile
 from ledboard import ledboard
 from movehandlerfile import MOVEHANDLER
@@ -17,8 +16,13 @@ class Machine:
     def __init__(self,
                  engine: chess.engine.SimpleEngine,
                  display: displayfile.DISPLAY,
-                 con: serial.serialposix.Serial):
-        self.board: chess.Board = None;
+                 con: serial.serialposix.Serial,
+                 startposition: str = None):
+
+        if startposition is None:
+            self.board: chess.Board = chess.Board()
+        else:
+            self.board: chess.Board = chess.Board()
         self.engine = engine
         self.display = display
         self.Movehandler = MOVEHANDLER()
@@ -26,7 +30,6 @@ class Machine:
         self.con = con
 
         self.COMstart = False
-
 
         self.choicestate = States.choicestate.Choicestate(self)
         self.stablestate = States.stablestate.stablestate(self)
@@ -78,5 +81,3 @@ def parseR(rlist: list[str]):
 
         row -= 1
     return placed
-
-

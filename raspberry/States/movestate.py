@@ -38,28 +38,32 @@ class movestate(States.basestate.State):
     def place(self, pos):
         sMove = self.machine.Movehandler.addplace(pos)
 
-        if sMove is not None:
-            move = chess.Move.from_uci(sMove)
+        if sMove is None or sMove == "0000":
+            return
 
-            print(move)
-            if move in self.machine.board.legal_moves:
-                self.machine.board.push(move)
-                self.machine.display.Addline("Your Move:" + sMove)
+        try:
+            move = self.machine.board.find_move(
+                chess.parse_square(sMove[:2]), #From
+                chess.parse_square(sMove[2:])) #To
+        except chess.IllegalMoveError:
+            warning("invalid move")
+            self.machine.stablestate.activate()
+            return
 
-                if self.machine.board.is_game_over():
-                    self.machine.endstate.activate()
-                    return
+        print(move)
+        self.machine.board.push(move)
+        self.machine.display.Addline("Your Move:" + sMove)
 
-                result = self.machine.engine.play(self.machine.board, chess.engine.Limit(time=0.1))
-                self.machine.board.push(result.move)
+        if self.machine.board.is_game_over():
+            self.machine.endstate.activate()
+            return
 
-                self.machine.display.Addline("COM Move: " + result.move.uci())
+        result = self.machine.engine.play(self.machine.board, chess.engine.Limit(time=0.1))
+        self.machine.board.push(result.move)
 
-                self.machine.stablestate.activate(chess.square_name(result.move.to_square))
+        self.machine.display.Addline("COM Move: " + result.move.uci())
 
-            else:
-                warning("invalid move")
-                self.machine.stablestate.activate()
+        self.machine.stablestate.activate(chess.square_name(result.move.to_square))
 
     def takeback(self):
         self.machine.board.pop()
