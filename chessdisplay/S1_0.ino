@@ -1,3 +1,5 @@
+//Choice Scene
+
 char CB_Text[] = "CB";
 char CR_Text[] = "CR";
 char CW_Text[] = "CW";
@@ -23,9 +25,9 @@ void lv_create_s_1_0(lv_obj_t* parent) {
   lv_obj_add_event_cb(bk_btn, btn_1_0_callback, LV_EVENT_CLICKED, CB_Text);
   lv_obj_align(bk_btn, LV_ALIGN_LEFT_MID, 5, 0);
 
-  LV_IMAGE_DECLARE(bK_1_0);
+  LV_IMAGE_DECLARE(Black_King);
   lv_obj_t* bkimg = lv_image_create(bk_btn);
-  lv_image_set_src(bkimg, &bK_1_0);
+  lv_image_set_src(bkimg, &Black_King);
   lv_obj_add_style(bkimg, &imgstyle, LV_PART_MAIN);
   lv_image_set_scale(bkimg, 512);
 
@@ -35,9 +37,9 @@ void lv_create_s_1_0(lv_obj_t* parent) {
   lv_obj_add_event_cb(wk_btn, btn_1_0_callback, LV_EVENT_CLICKED, CW_Text);
   lv_obj_align(wk_btn, LV_ALIGN_RIGHT_MID, -5, 0);
 
-  LV_IMAGE_DECLARE(wK_1_0);
+  LV_IMAGE_DECLARE(White_King);
   lv_obj_t* wkimg = lv_image_create(wk_btn);
-  lv_image_set_src(wkimg, &wK_1_0);
+  lv_image_set_src(wkimg, &White_King);
   lv_obj_add_style(wkimg, &imgstyle, LV_PART_MAIN);
   lv_image_set_scale(wkimg, 512);
 

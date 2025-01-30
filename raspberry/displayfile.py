@@ -1,4 +1,5 @@
 import logging
+from logging import warning
 from time import sleep
 
 import serial
@@ -81,6 +82,12 @@ class DISPLAY:
 
         data = self.conn.readline()
         strdata = data.decode("utf-8").strip()
+
+        if strdata.startswith("["):
+            warning("Display:" + strdata)
+            return
+
+
         if strdata.startswith("COM:BTN1_1:"):
             match strdata:
                 case "COM:BTN1_1:TB":

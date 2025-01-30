@@ -14,7 +14,6 @@ logging.getLogger().setLevel(logging.INFO)
 arduino = serial.Serial(port=port, baudrate=115200, timeout=.1)
 arduino.reset_input_buffer()
 
-board = chess.Board()
 engine = chess.engine.SimpleEngine.popen_uci(path)
 display = DISPLAY(dispport)
 CH = cmd_file.CMD_HANDLER()
@@ -68,6 +67,9 @@ while True:
                 machine.State.cwhite()
             case "CR":
                 machine.State.crand()
+
+            case None:
+                pass
 
             case _:
                 warning("Unknown Command. How did it get to main?")

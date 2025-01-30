@@ -19,6 +19,7 @@ class movestate(States.basestate.State):
 
         if self.machine.board.is_game_over():
             self.machine.endstate.activate()
+            return
 
         if self.machine.board.turn == self.machine.comcoluour:
             result = self.machine.engine.play(self.machine.board, chess.engine.Limit(time=0.01))

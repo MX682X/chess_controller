@@ -1,3 +1,5 @@
+//Endscreen
+
 void lv_create_s_1_2_b(lv_obj_t* parent) {
   lv_obj_t* text_label = lv_label_create(parent);
   lv_label_set_text(text_label, "Sieg fuer Schwarz!");
