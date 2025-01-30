@@ -661,36 +661,15 @@ int main (void) {
     #endif
     #define LED_DELAY ((4000000)/(15*8))  // 33.3k counts
 
-    asm __volatile__( /* asm saved 3 words here */
-    "ldi  r22, %[CNT]       \n" /* uint8_t count */
-  "led_toggle:              \n"
-    "sbi  %[pLED], %[bLED]  \n" /* Toggle LED */
-    "ldi  r24, %[LDLY]      \n" /* uint16_t delay */ 
-    "ldi  r25, %[HDLY]      \n"
-  "led_delay:               \n"
-    "wdr                    \n" /* 1c watchdog reset */
-    "ldd  r23, Y+1          \n" /* 2c load UART Status Flag */
-    "sbiw r24, 1            \n" /* 2c subtract DELAY */
-    "sbrs r23, %[FLAG]      \n" /* 1c if RX Flag set, break delay loop */
-    "brne led_delay         \n" /* 2c branch only if delay is not zero or RX flag clear */
-    "subi r22, 1            \n" /* decrement count */
-    "brne led_toggle        \n" /* branch if count not zero */
-    ::  [CNT]  "n" (FLASH_COUNT),
-        [LDLY] "M" (LED_DELAY & 0xFF),
-        [HDLY] "M" (LED_DELAY >> 8),
-        [pLED] "I" (_SFR_MEM_ADDR(LED_PORT.IN)),
-        [bLED] "I" (__builtin_ctz(LED)),  /* count trailing zeros */
-        [FLAG] "I" (USART_RXCIF_bp)
-    : "r22", "r23", "r24", "r25");
-    //for (uint8_t count = 0; count < FLASH_COUNT; count++) {
-    //  LED_PORT.IN |= LED;
-    //  for(uint16_t delay = 0; delay < LED_DELAY; delay++) {
-    //    watchdogReset();
-    //    if (_usart->STATUS & USART_RXCIF_bm) {
-    //      break;
-    //    }
-    //  }
-    //}
+    for (uint8_t count = 0; count < FLASH_COUNT; count++) {
+      LED_PORT.IN |= LED;
+      for(uint16_t delay = 0; delay < LED_DELAY; delay++) {
+        watchdogReset();
+        if (_usart->STATUS & USART_RXCIF_bm) {
+          break;
+        }
+      }
+    }
   #else
     #if defined(LED_START_ON)
       #ifndef LED_INVERT
