@@ -653,13 +653,13 @@ int main (void) {
   #if LED_START_FLASHES > 0
     // delay based on 4 MHz clock since that's what we have
     // This delay is calculated from 4,000,000 Hz CPU clock and the
-    // desired frequency (15 Hz), and the duration of the loop (8 clocks)
+    // desired frequency (15 Hz), and the duration of the loop (10 clocks)
     #if defined(LED_INVERT)
       #define FLASH_COUNT (LED_START_FLASHES * 2) + 1
     #else
       #define FLASH_COUNT (LED_START_FLASHES * 2)
     #endif
-    #define LED_DELAY ((4000000)/(15*8))  // 33.3k counts
+    #define LED_DELAY ((4000000)/(15*10))
 
     for (uint8_t count = 0; count < FLASH_COUNT; count++) {
       LED_PORT.IN |= LED;
