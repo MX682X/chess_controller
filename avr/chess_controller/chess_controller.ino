@@ -77,10 +77,10 @@ void setup() {
   // 16MHz / 2 = 8MHz
   // 8MHz / 31250 = 256
   // 256 / 8 lines = 32 FPS 
-  TCB4.CCMP = 65000;
+  TCB4.CCMP = 31250;
   TCB4.CTRLA = TCB_CLKSEL_DIV2_gc | TCB_ENABLE_bm;
   
- 
+  digitalWriteFast(PIN_PD0, HIGH);  // "disable" LED
   pinConfigure(PIN_PD0, (PIN_DIR_OUT | PIN_INVERT_ON | PIN_ISC_DISABLE));
   digitalWriteFast(PIN_PA0, HIGH);  // init FET loop
   CURR_LINE = 0x00;
@@ -218,6 +218,11 @@ void loop() {
           led_matrix[number] = 0x00;
         }
       } else if (memcmp(serial_input_buffer, "DFU", 3) == 0) {
+        Serial.write("d");
+        Serial.write("f");
+        Serial.write("u");
+        Serial.write("\n");
+        Serial.flush();
         _PROTECTED_WRITE(RSTCTRL.SWRR, 1); // Trigger Software Reset, bootloader will handle the rest
       }
     } else {
