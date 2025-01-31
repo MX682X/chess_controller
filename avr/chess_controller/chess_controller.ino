@@ -1,3 +1,13 @@
+/* 
+ * Settings for the board:
+ * DB-Series
+ * AVR64DB64 (optiboot)
+ * Clock Speed: Min 8 MHz, internal
+ * Bootloader Serial port: PC0, PC1
+ * MVIO: Enabled
+ * 
+*/ 
+
 #define PIECE_TAKEN   't'
 #define PIECE_PLACED  'p'
 #define SET_LED       's'
@@ -7,6 +17,9 @@
 #define GET_REEDS     'r'
 #define CLR_LED_LINE  'n'
 #define CLR_LED_BOARD 'o'
+#define ERROR_FLAG    'e'
+
+#define FW_UPLOAD     "DFU" // Device Firmware Update
 
 #define CURR_LINE     GPR.GPR2
 #define LINE_REED     GPR.GPR1
@@ -44,8 +57,7 @@ uint8_t reed_matrix[8][8] = {};
 uint8_t reed_bool[8] = {};
 // Each Bit represents the current state of the reed Contact. (1= Active)
 
-uint8_t serial_input_buffer[8] = { 0x00 };
-uint8_t serial_position = 0;
+
 
 
 uint8_t all_lines_counter = 0;
@@ -62,80 +74,56 @@ void setup() {
   TCB4.INTFLAGS = 0x03; // Clear ISR Flags
   TCB4.INTCTRL = 0x02;  // Overflow ISR
   //TCB4.CCMP = (F_CPU/2) / (8*40); // 320 LPS
-  TCB4.CCMP = 65000;
+  // 16MHz / 2 = 8MHz
+  // 8MHz / 31250 = 256
+  // 256 / 8 lines = 32 FPS 
+  TCB4.CCMP = 31250;
   TCB4.CTRLA = TCB_CLKSEL_DIV2_gc | TCB_ENABLE_bm;
   
- 
-  digitalWriteFast(PIN_PD0, HIGH);  // onboard LED
-  pinMode(PIN_PD0, OUTPUT);
+  digitalWriteFast(PIN_PD0, HIGH);  // "disable" LED
+  pinConfigure(PIN_PD0, (PIN_DIR_OUT | PIN_INVERT_ON | PIN_ISC_DISABLE));
   digitalWriteFast(PIN_PA0, HIGH);  // init FET loop
   CURR_LINE = 0x00;
   Serial.begin(115200);
   
   Serial.println("Setup Done");
-  digitalWriteFast(PIN_PD0, LOW);
+  digitalWriteFast(PIN_PD0, HIGH);  // "Enable" LED
 
   boot_splash();
 }
 
 void loop() {
-  uint8_t serial_output_buffer[5] = {};  // keep in stack for faster access
-  /*
-  cli();                          // ISR guard
-  uint8_t flags = ACQ_STATUS;
-  uint8_t new_reed = LINE_REED;
-  uint8_t line = CURR_LINE;
-  sei(); */
-  /*
-  if (flags & 0x02) {    // one line scanned
-    ACQ_STATUS &= ~0x02;  // clear Flag
-    uint8_t *old_reed = reed_matrix[line];
-        Serial.println(line);
-    
-    for (uint8_t i = 0; i < 8; i++) {
-      uint8_t value = old_reed[i];
-      if(new_reed & 0x01) {
-        if (value < 150)
-          value += 1;
-      } else {
-        if (value > 50)
-          value -= 1;
-      }
-      old_reed[i] = value;
-      new_reed >>= 1;
-    }
-  }
-  */
-
+  uint8_t serial_input_buffer[8] = { 0x00 };
+  uint8_t serial_position = 0;
 
   // change reed_matrix according to reed_bool
   // increase if active, decrease when inactive
   // no overflow (>150) or underflow (<50)
 
-  if (ACQ_STATUS & 0x01) {                   // all lines scanned
-    ACQ_STATUS &= ~0x01;                // clear Flag
-    uint8_t *pNewReed = &reed_bool[0];
-    uint8_t *pOldReed = &reed_matrix[0][0];
-    for (uint8_t i = 0; i < 8; i++) {
+  if (ACQ_STATUS & 0x01) {                    // all lines scanned
+    ACQ_STATUS &= ~0x01;                      // clear Flag
+    uint8_t *pNewReed = &reed_bool[0];        // contains the current state of the reed contacts
+    uint8_t *pOldReed = &reed_matrix[0][0];   // contains a byte per reed as a counter to low-pass filter
+    for (uint8_t i = 0; i < 8; i++) {         // go through every line
       uint8_t newReed = *(pNewReed++);
-      for (uint8_t j = 0; j < 8; j++) {
+      for (uint8_t j = 0; j < 8; j++) {       // go through each column
         uint8_t value = *pOldReed;
         //value = reed_matrix[i][j]
         //newReed = reed_bool[i] >> j
-        if(newReed & 0x01) {
-          if (value < 150)
-            value += 1;
-        } else {
-          if (value > 50)
-            value -= 1;
+        if(newReed & 0x01) {                  // if figure placed
+          if (value < 150)                    // upper limit of 150
+            value += 1;                       // count up
+        } else {                              // no figure placed
+          if (value > 50)                     // lower limit of 50
+            value -= 1;                       // count down
         }
-        *(pOldReed++) = value;
+        *(pOldReed++) = value;                // update value
         newReed >>= 1;
       }
     }
 
 
-    // Check if reed_matrix has to flip else reset to base value (60 if no piece is there, 140 otherwise)
+    // Check if reed_matrix has to flip, else reset to base value (60 if no piece is there, 140 otherwise)
 
     if (++all_lines_counter >= 24) {    // 24 iterations 
       all_lines_counter = 0;
@@ -159,24 +147,20 @@ void loop() {
           if (counter >= 100) {       // count up
             if (counter <= 120) {     // counted "20 down"
               counter = 60;           // piece removed
-              serial_output_buffer[0] = PIECE_TAKEN;
-              serial_output_buffer[1] = col;
-              serial_output_buffer[2] = line;
-              serial_output_buffer[3] = '\n';
-              serial_output_buffer[4] = 0x00;
-              Serial.print((char *)serial_output_buffer);
+              Serial.write(PIECE_TAKEN);
+              Serial.write(col);
+              Serial.write(line);
+              Serial.write('\n');
             } else {
               counter = 140;          // fall back to base
             }
           } else {
             if (counter >= 80) {      // counted "20 up"
               counter = 140;          // piece touched
-              serial_output_buffer[0] = PIECE_PLACED;
-              serial_output_buffer[1] = col;
-              serial_output_buffer[2] = line;
-              serial_output_buffer[3] = '\n';
-              serial_output_buffer[4] = 0x00;
-              Serial.print((char *)serial_output_buffer);
+              Serial.write(PIECE_PLACED);
+              Serial.write(col);
+              Serial.write(line);
+              Serial.write('\n');
             } else {
               counter = 60;
             }
@@ -199,12 +183,30 @@ void loop() {
       uint8_t letter = serial_input_buffer[1];
       uint8_t number = serial_input_buffer[2] - '0';
 
-      if (letter > 'Z') {
+      if (letter > 'Z') { // transform letter to number
         letter -= 'a';
       } else {
         letter -= 'A';
       }
       number -= 1; // adjust 1~8 to 0~7
+
+      if (number < 8) {   // Try to handle LED commands first, it's mostly those 
+        if (letter < 8) {
+          uint8_t bit_pos = 1 << letter;
+          if (cmd == SET_LED) {
+            led_matrix[number] |= bit_pos;
+            break;
+          } else if (cmd == CLR_LED) {
+            led_matrix[number] &= ~(bit_pos);
+            break;
+          } else if (cmd == TGL_LED) {
+            led_matrix[number] ^= bit_pos;
+            break;
+          }
+        }
+      }
+
+
       if (cmd == GET_LEDS) {
         print_led_board();
       } else if (cmd == GET_REEDS) {
@@ -215,22 +217,20 @@ void loop() {
         if (number < 8) { // n*1
           led_matrix[number] = 0x00;
         }
-      } else {
-        if (number < 8) {
-          if (letter < 8) {
-            uint8_t bit_pos = 1 << letter;
-            if (cmd == SET_LED) {
-              led_matrix[number] |= bit_pos;
-            } else if (cmd == CLR_LED) {
-              led_matrix[number] &= ~(bit_pos);
-            } else if (cmd == TGL_LED) {
-              led_matrix[number] ^= bit_pos;
-            }
-          }
-        }
+      } else if (memcmp(serial_input_buffer, "DFU", 3) == 0) {
+        Serial.write("d");
+        Serial.write("f");
+        Serial.write("u");
+        Serial.write("\n");
+        Serial.flush();
+        _PROTECTED_WRITE(RSTCTRL.SWRR, 1); // Trigger Software Reset, bootloader will handle the rest
       }
     } else {
       serial_input_buffer[serial_position++] = ch;
+      if (serial_position > 4) {
+        Serial.println(ERROR_FLAG);
+        serial_position = 0;
+      }
     }
   }
 }
@@ -310,11 +310,10 @@ ISR(TCB4_INT_vect) {
     LED_VPORT.OUT = current_leds[0];  // load new LED state
     ACQ_STATUS |= 0x01;               // indicator for "all 8"
     CURR_LINE = 0x00;
-    VPORTD.IN |= 0x01;                // activity PD0
+    VPORTD.IN |= 0x01;                // activity PD0 (toggle)
   } else {
     COM_VPORT.OUT = com;              // enable next com transistor
     LED_VPORT.OUT = current_leds[line];  // load new LED state
-    //ACQ_STATUS |= 0x02;               // indicator for new Line
     CURR_LINE = line;                   // update Current line
   }
   TCB4.INTFLAGS = 0x03;
