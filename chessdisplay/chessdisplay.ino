@@ -34,10 +34,10 @@ uint32_t draw_buf[DRAW_BUF_SIZE / 4];
 
 uint32_t lastTick = 0;  //Used to track the tick timer
 
-enum Scenes { S0,
-              S1_0,
-              S1_1,
-              S1_2 };
+enum Scenes { S_Discon,
+              S_Choice,
+              S_Game,
+              S_End };
 
 Scenes activeScene;
 
@@ -75,12 +75,9 @@ void touchscreen_read(lv_indev_t* indev, lv_indev_data_t* data) {
 
 void lv_create_main_gui(void) {
 
-  /*
   lv_create_s_0(lv_screen_active());
-  activeScene = S0;*/
-  char* fen = "8/8/3k4/3q4/3Q4/3K4/8/8";
+  activeScene = S_Discon;
 
-  lv_create_s_1_3(lv_screen_active(),fen);
 }
 
 
@@ -125,46 +122,40 @@ void loop() {
     String myString = Serial.readStringUntil('\n');
     myString.trim();
     //do Something wit Serial
-    if (myString == "COM:discon") {
-      transition_s_0();
+    if (myString == "discon") {
+      transition_s_Discon();
       return;
     }
-    if (myString == "COM:reboot") {
+    if (myString == "reboot") {
       ESP.restart();
     }
 
 
-    if (myString == "COM:SC:1_1") {
-      transition_s_1_1();
+    if (myString == "SC:Game") {
+      transition_s_Game();
     }
-    if (myString == "COM:SC:1_0") {
-      transition_s_1_0();
+    if (myString == "SC:Choice") {
+      transition_s_Choice();
     }
-    if (myString.startsWith("COM:SC:1_2:")) {
-      transition_s_1_2(myString.substring(11));
+    if (myString.startsWith("SC:end:")) {
+      transition_s_1_2(myString.substring(7));
       return;
     }
 
-    switch (activeScene) {
-      case S0:
-
-        break;
-      case S1_0:
-
-        break;
-      case S1_1:
-        if (myString == "COM:1_1:rm") {
+    if (activeScene == S_Game){
+      // Commands only avalible in Game Scene
+        if (myString == "Game:rm") {
           lable_1_1_rm();
-        } else if (myString == "COM:1_1:clr") {
+        } else if (myString == "Game:clr") {
           lable_1_1_clear();
-        } else if (myString.startsWith("COM:1_1:push:")) {
-          lable_1_1_push(myString.substring(13));
+        } else if (myString.startsWith("Game:push:")) {
+          lable_1_1_push(myString.substring(10));
+        }else if(myString.startsWith("Game:fen:")){
+          set_board_fen(myString.substring(9).c_str());
         }
-        break;
-      default:
-        LV_LOG_ERROR("Reached invalid Scene");
-        break;
+
     }
+
   }
 
 
