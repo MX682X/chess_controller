@@ -74,8 +74,13 @@ void touchscreen_read(lv_indev_t* indev, lv_indev_data_t* data) {
 
 
 void lv_create_main_gui(void) {
+
+  /*
   lv_create_s_0(lv_screen_active());
-  activeScene = S0;
+  activeScene = S0;*/
+  char* fen = "8/8/3k4/3q4/3Q4/3K4/8/8";
+
+  lv_create_s_1_3(lv_screen_active(),fen);
 }
 
 
@@ -135,7 +140,7 @@ void loop() {
     if (myString == "COM:SC:1_0") {
       transition_s_1_0();
     }
-    if(myString.startsWith("COM:SC:1_2:")){
+    if (myString.startsWith("COM:SC:1_2:")) {
       transition_s_1_2(myString.substring(11));
       return;
     }
