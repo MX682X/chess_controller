@@ -18,6 +18,8 @@ class stablestate(States.basestate.State):
         logging.info("Activating Stablestate")
         self.machine.State = self
 
+
+
         self.machine.leds.clrall()
         self.zuviel = []
         self.fehlt = self.machine.boardstrlist

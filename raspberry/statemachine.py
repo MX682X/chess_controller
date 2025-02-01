@@ -43,6 +43,10 @@ class Machine:
     def boardstrlist(self):
         return [chess.square_name(i) for i in self.board.piece_map()]
 
+
+    def disp_update(self):
+        self.display.set_fen(self.board)
+
     # TODO denhier Erneuern
     @property
     def poslist(self):
@@ -61,6 +65,7 @@ class Machine:
 
         self.con.readline()
         return parseR(rlist)
+
 
 
 def parseR(rlist: list[str]):

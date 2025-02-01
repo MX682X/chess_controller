@@ -2,6 +2,7 @@ import logging
 from logging import warning
 from time import sleep
 
+import chess
 import serial
 
 
@@ -102,6 +103,13 @@ class DISPLAY:
             return strdata[-2:]
         else:
             logging.warning(f"Expected buttoncommand from scene Game. Got: {strdata}")
+
+
+    def set_fen(self,fen: str|chess.Board):
+        if type(fen) == chess.Board:
+            fen = fen.board_fen()
+
+        self.conn.write(("Game:fen:" + fen+"\n").encode("utf-8"))
 
     def close(self):
         self.conn.write(b"COM:discon\n")
