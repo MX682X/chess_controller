@@ -26,11 +26,11 @@ class endstate(States.basestate.State):
         if self.machine.board.is_checkmate():
             match self.machine.board.outcome().winner:
                 case chess.WHITE:
-                    self.machine.display.setscene("1_2:w")
+                    self.machine.display.setscene("end:w")
                 case chess.BLACK:
-                    self.machine.display.setscene("1_2:b")
+                    self.machine.display.setscene("end:b")
         else:
-            self.machine.display.setscene("1_2:p")
+            self.machine.display.setscene("end:p")
 
         filename = "chessgame-" + datetime.now().strftime("%Y-%m-%d-%H-%M") + ".pgn"
 

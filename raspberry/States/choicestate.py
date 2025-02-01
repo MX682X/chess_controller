@@ -18,12 +18,12 @@ class Choicestate(States.basestate.State):
         logging.info("Activating choicestate")
 
         self.machine.State = self
-        self.machine.display.setscene("1_0")
+        self.machine.display.setscene("discon")
 
     def cblack(self):
         self.machine.comcoluour = chess.WHITE
 
-        self.machine.display.setscene("1_1")
+        self.machine.display.setscene("Game")
         self.machine.display.Addline("Waiting for Startposition")
 
         self.machine.stablestate.activate()
@@ -31,7 +31,7 @@ class Choicestate(States.basestate.State):
     def cwhite(self):
         self.machine.comcoluour = chess.BLACK
 
-        self.machine.display.setscene("1_1")
+        self.machine.display.setscene("Game")
         self.machine.display.Addline("Waiting for Startposition")
 
         self.machine.stablestate.activate()
