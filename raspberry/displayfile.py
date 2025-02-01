@@ -90,15 +90,15 @@ class DISPLAY:
             return
 
 
-        if strdata.startswith("COM:BTN1_1:"):
+        if strdata.startswith("Game_BTN:"):
             match strdata:
-                case "COM:BTN1_1:TB":
+                case "Game_BTN:TB":
                     return "takeback"
-                case "COM:BTN1_1:RES":
+                case "Game_BTN:RES":
                     return "Resign"
-                case "COM:BTN1_1:STB":
+                case "Game_BTN:STB":
                     return "stable"
-        elif strdata.startswith("COM:BTN1_0:"):
+        elif strdata.startswith("Choice_BTN:"):
             return strdata[-2:]
         else:
             logging.warning(f"Expected buttoncommand from scene Game. Got: {strdata}")

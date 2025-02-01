@@ -60,7 +60,7 @@ void lv_create_s_1_0(lv_obj_t* parent) {
 
 static void btn_1_0_callback(lv_event_t* e) {
 
-  Serial.print("COM:BTN1_0:");
+  Serial.print("Choice:");
   Serial.println((char*)lv_event_get_user_data(e));
 }
 

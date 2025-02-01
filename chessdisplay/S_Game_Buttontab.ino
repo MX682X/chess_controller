@@ -68,7 +68,7 @@ void lable_1_1_rm() {
 
 static void btn_1_1_callback(lv_event_t* e) {
 
-  Serial.print("COM:BTN1_1:");
+  Serial.print("Game_BTN:");
   Serial.println((char*)lv_event_get_user_data(e));
 }
 
