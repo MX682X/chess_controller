@@ -40,11 +40,13 @@ class Machine:
         self.choicestate.activate()
 
     @property
-    def boardstrlist(self):
+    def boardstrlist(self)-> list[str]:
+        """Returns a list of all currently occupied Spaces on the Board"""
         return [chess.square_name(i) for i in self.board.piece_map()]
 
 
     def disp_update(self):
+        """Update the Board on the Display to reflect the Board"""
         self.display.set_fen(self.board)
 
     # TODO denhier Erneuern

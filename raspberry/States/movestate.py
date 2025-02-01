@@ -21,6 +21,7 @@ class movestate(States.basestate.State):
             self.machine.endstate.activate()
             return
 
+        #If it's the Computers Turn, let him Move
         if self.machine.board.turn == self.machine.comcoluour:
             result = self.machine.engine.play(self.machine.board, chess.engine.Limit(time=0.01))
             self.machine.board.push(result.move)
@@ -57,6 +58,7 @@ class movestate(States.basestate.State):
         self.machine.stablestate.activate()
 
     def takeback(self):
+        #Remove the last two played moves (The Computer Move and your move and Stabilise that Positon)
         self.machine.board.pop()
         self.machine.board.pop()
         self.machine.stablestate.activate()
