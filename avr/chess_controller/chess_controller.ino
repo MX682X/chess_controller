@@ -17,6 +17,8 @@
 #define GET_REEDS     'r'
 #define CLR_LED_LINE  'n'
 #define CLR_LED_BOARD 'o'
+#define GET_BOARD     'b'
+#define BOARD_LAYOUT  'v'
 #define ERROR_FLAG    'e'
 
 #define FW_UPLOAD     "DFU" // Device Firmware Update
@@ -217,6 +219,20 @@ void loop() {
         if (number < 8) { // n*1
           led_matrix[number] = 0x00;
         }
+      } else if (cmd == GET_BOARD) {        // prints "va1;12;b3;...;\n" where a piece is placed
+        uint8_t *reed = &reed_matrix[0][0];
+        Serial.write(BOARD_LAYOUT);
+        for (uint8_t line = '1'; line <= '8'; line++) {
+          for (uint8_t col = 'a'; col <= 'h'; col++) {
+            if (*reed > 120) {
+              Serial.write(col);
+              Serial.write(line);
+              Serial.write(";");
+            }
+            reed++;
+          }
+        }
+        Serial.write("\n");
       } else if (memcmp(serial_input_buffer, "DFU", 3) == 0) {
         Serial.write("d");
         Serial.write("f");
