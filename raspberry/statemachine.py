@@ -60,13 +60,10 @@ class Machine:
             if self.con.in_waiting != 0:
                 data = self.con.readline().decode("utf-8")
 
+                logging.info(data)
+
                 if data[0] == "v":
                     if data == "v":
                         return []
                     else:
                         return data[1:-1].split(";")
-
-
-
-
-

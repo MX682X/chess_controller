@@ -1,5 +1,6 @@
 import logging
 from logging import warning
+from time import sleep
 
 import chess.engine
 import serial
@@ -49,6 +50,7 @@ while True:
         activecmdlist.append(display.get_button_Cmc())
 
     while len(activecmdlist) != 0:
+        logging.info(f"CMD: {activecmdlist[-1]}")
         match activecmdlist.pop():
             case "stop":
                 print("stopping")
@@ -76,6 +78,8 @@ while True:
 
     if exitflag:
         break
+
+    sleep(0.01)
 
 CH.cmd_close()
 engine.close()

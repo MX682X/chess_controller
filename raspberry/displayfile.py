@@ -31,23 +31,6 @@ class DISPLAY:
         else:
             print("Scene already set")
 
-    # SCENE 1_0
-    def Waitforgamemode(self):
-        self.setscene("Choice")
-        while True:
-            if self.conn.in_waiting != 0:
-                data = self.conn.readline()
-                strdata = data.decode("utf-8").strip()
-                if strdata.startswith("COM:BTN1_0:"):
-                    match strdata:
-                        case "COM:BTN1_0:CB":
-                            return "black"
-                        case "COM:BTN1_0:CW":
-                            return "white"
-                        case "COM:BTN1_0:CR":
-                            return "Random"
-                else:
-                    logging.warning("Extpectet a Scene 1_0 Command")
 
     # SCENE 1_1
 
@@ -91,15 +74,15 @@ class DISPLAY:
             return
 
 
-        if strdata.startswith("Game_BTN:"):
+        if strdata.startswith("Game:"):
             match strdata:
-                case "Game_BTN:TB":
+                case "Game:TB":
                     return "takeback"
-                case "Game_BTN:RES":
+                case "Game:RES":
                     return "Resign"
-                case "Game_BTN:STB":
+                case "Game:STB":
                     return "stable"
-        elif strdata.startswith("Choice_BTN:"):
+        elif strdata.startswith("Choice:"):
             return strdata[-2:]
         else:
             logging.warning(f"Expected buttoncommand from scene Game. Got: {strdata}")

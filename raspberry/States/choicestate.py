@@ -18,7 +18,7 @@ class Choicestate(States.basestate.State):
         logging.info("Activating choicestate")
 
         self.machine.State = self
-        self.machine.display.setscene("discon")
+        self.machine.display.setscene("Choice")
 
     def cblack(self):
         self.machine.comcoluour = chess.WHITE
