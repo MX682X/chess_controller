@@ -2,7 +2,7 @@
  * Settings for the board:
  * DB-Series
  * AVR64DB64 (optiboot)
- * Clock Speed: Min 24 MHz, internal
+ * Clock Speed: 16 MHz, internal
  * Bootloader Serial port: PC0, PC1
  * MVIO: Enabled
  * 
