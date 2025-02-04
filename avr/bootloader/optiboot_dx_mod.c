@@ -246,21 +246,9 @@ typedef union {
   #define LED_START_FLASHES 0
 #endif
 
-#ifndef ENABLE_CHIP_ERASE
-  #define ENABLE_CHIP_ERASE 0
-#endif
-#ifndef TRY_USING_EEPROM
-  #define TRY_USING_EEPROM 0
-#endif
-#ifndef ASM_UART
-  #define ASM_UART 1
-#endif
-#ifndef ASM_COPY
-  #define ASM_COPY 1
-#endif
-#ifndef OTA_COPY
-  #define OTA_COPY 0
-#endif
+#define ENABLE_CHIP_ERASE
+#define ASM_UART
+#define ASM_COPY
 
 /*
  * The AVR Dx-series parts all reset to running on the internal oscillator
@@ -301,9 +289,6 @@ typedef union {
 #if BAUD_SETTING_4 > 255
   #define BAUD_SETTING_L xstr(BAUD_SETTING_4 % 256)
   #define BAUD_SETTING_H xstr(BAUD_SETTING_4 / 256)
-#else
-  #define BAUD_SETTING_L BAUD_SETTING_4
-  #define BAUD_SETTING_H 0x00
 #endif
 /*
  * Watchdog timeout translations from human readable to config vals
@@ -333,7 +318,6 @@ typedef union {
 #define GET_UART_DATA(__localVar__)   __asm__ __volatile__("ldd  %A0, Y+0 \n":   "=r" (__localVar__) : );
 #define SET_UART_DATA(__localVar__)   __asm__ __volatile__("std  Y+2, %A0 \n": :  "r" (__localVar__)   );
 #endif
-
 
 #if defined(ASM_COPY) && defined(ASM_UART)
 #define ASM_COPY_RX(__buff__, __len__)                                   \
@@ -451,6 +435,10 @@ void __attribute__((noinline)) watchdogConfig(uint8_t x);
 static void getNch(uint8_t);
 
 
+#if LED_START_FLASHES > 0
+  static inline void flash_led();
+#endif
+
 
 
 
@@ -465,6 +453,7 @@ static inline void write_buffered_flash(length_t len);
 static inline void write_buffered_eeprom(length_t len);
 static inline void erase_flash(void);
 
+#define TRY_USING_EEPROM
 
 /*
  * RAMSTART should be self-explanatory. It's bigger on parts with a
@@ -481,10 +470,14 @@ static inline void erase_flash(void);
 register USART_t* _usart asm ("r28");  // keep available throughout whole program
 #endif
 
+#if defined(ENABLE_CHIP_ERASE)
+register  uint8_t flash_clr asm("r2");   // load flash at 0x200 and add 1. if == 0, flash was erased
+#endif
+
 
 register addr16_t buff asm("r20");      // will require only a movw instead of two ldi
 register addr16_t address asm("r14");   // set by avrdude, reg has to be mov'd anyway
-register  uint8_t flash_clr asm("r2");   // load flash at 0x200 and add 1. if == 0, flash was erased
+
 
 
 /* main program starts here */
@@ -535,6 +528,23 @@ int main (void) {
     // We can also end up here on a freshly bootloaded chip
     _PROTECTED_WRITE(RSTCTRL.SWRR, 1);
   }
+  
+  
+  // Data address = 0x0200 PROGMEM, If first byte == 0xFF, chip
+  // is erased. We increment it by one to make it 0x00 to do a cpse
+  // with r1. This allows to keep the MCU in bootloader when no program was found
+  // It is dangerous, but at that point we can expect isr vectors
+  // which are usually jmp/rjmp instructions and those will never
+  // have 0xFF (NOP) at this address.
+  __asm__ __volatile__(
+    "ldi    r31, 0x02 \n"  // Z = 0x0200
+    "lpm     r2,   Z  \n"
+    "inc     r2       \n"
+    "breq      unprog \n" // skip rjmp to programmer if a NOP detected on first word 
+  :: : "r31"
+  );
+  
+  
   /* Entry conditions supported:
    * Cond:      Exclude:  Require:
    * _extr      WDRF      EXTRF,SWRF,orUPDIRF
@@ -544,6 +554,7 @@ int main (void) {
    * _swronly   WDRF      SWRF
    * Require: 0x34, 0x04, 0x35, 0x01, 0x10.
    */
+   
   #if defined(ENTRYCOND_REQUIRE)
     // If WDRF is set OR nothing except BORF and/or PORF is set, which are not entry conditions.
     // If this isn't true, EXTRF, SWRF, or UPDIRF set; all are entry condiions.
@@ -573,24 +584,11 @@ int main (void) {
   // We don't have to load the lower byte, save a word.
   // buff.word = RAMSTART;
   __asm__ __volatile__ (
+    "unprog:"
     "ldi %B[reg], %[adr] \n"
   :: [reg] "r" (buff),
      [adr] "M" ((uint8_t)(RAMSTART>>8)));
 
-  // Data address = 0x0200 PROGMEM, If first byte == 0xFF, chip
-  // is erased. We increment it by one to make it 0x00 to do a cpse
-  // with r1 right before the spm insn that would erase a page.
-  // It is dangerous, but at that point we can expect isr vectors
-  // which are usually jmp/rjmp instructions and those will never
-  // have 0xFF at this address.
-  #if ENABLE_CHIP_ERASE > 0
-  __asm__ __volatile__(
-    "ldi r31,    0x02  \n"  // Z = 0x0200
-    "lpm  r2,       Z  \n"
-    "inc  r2           \n"
-  :: : "r31"
-  );
-  #endif
 
   #if defined (ASM_UART)
     _usart = &MYUART;   // ! Y reg must be set before the first function call
@@ -619,25 +617,22 @@ int main (void) {
   #endif
 
   #if defined (ASM_UART)
-    __asm__ __volatile__(
-      "ldi   r24,    %0   \n"           /* load baud LSB    */
-      "std   Y+8,   r24   \n"           /* store baud LSB   */
-    #if (BAUD_SETTING_H > 0x00)
-      "ldi   r24,    %1   \n"           /* load baud MSB    */
-      "std   Y+9,   r24   \n"           /* store baud MSB   */
+    #if (BAUD_SETTING_4 < 256)
+      _usart->BAUDL = BAUD_SETTING_4;
+    #else
+      _usart->BAUDL = (BAUD_SETTING_4 & 0xFF);
+      _usart->BAUDH = (BAUD_SETTING_4 >> 8);
     #endif
-      "ldi   r24,    %2   \n"           /* load CTRLC       */
-      "std   Y+7,   r24   \n"           /* store CTRLC      */
-      "ldi   r24,    %3   \n"           /* load CTRLB       */
-      "std   Y+6,   r24   \n"           /* store CTRLB      */
-      :: "M" (BAUD_SETTING_L),          /* inputs           */
-         "M" (BAUD_SETTING_H),
-         "M" (USART_CHSIZE_8BIT_gc),
-         "M" (USART_RXEN_bm | USART_TXEN_bm));
+      //_usart->DBGCTRL = 1;  // run during debug
+      _usart->CTRLC = (USART_CHSIZE_gm & USART_CHSIZE_8BIT_gc);  // Async, Parity Disabled, 1 StopBit
+      //_usart->CTRLA = 0;  // Interrupts: all off - Unnecessary! We ensured that the chip was freshly reset so this is already 0.
+      _usart->CTRLB = USART_RXEN_bm | USART_TXEN_bm;
   #else
-    MYUART.BAUDL = BAUD_SETTING_L;
-    #if (BAUD_SETTING_H > 0x00)
-      MYUART.BAUDL = BAUD_SETTING_H;
+    #if (BAUD_SETTING_4 < 256)
+      MYUART.BAUDL = BAUD_SETTING_4;
+    #else
+      MYUART.BAUDL = (BAUD_SETTING_4 & 0xFF);
+      MYUART.BAUDH = (BAUD_SETTING_4 >> 8);
     #endif
       //MYUART.DBGCTRL = 1;  // run during debug
       MYUART.CTRLC = (USART_CHSIZE_gm & USART_CHSIZE_8BIT_gc);  // Async, Parity Disabled, 1 StopBit
@@ -651,46 +646,8 @@ int main (void) {
   #endif
 
   #if LED_START_FLASHES > 0
-    // delay based on 4 MHz clock since that's what we have
-    // This delay is calculated from 4,000,000 Hz CPU clock and the
-    // desired frequency (15 Hz), and the duration of the loop (8 clocks)
-    #if defined(LED_INVERT)
-      #define FLASH_COUNT (LED_START_FLASHES * 2) + 1
-    #else
-      #define FLASH_COUNT (LED_START_FLASHES * 2)
-    #endif
-    #define LED_DELAY ((4000000)/(15*8))  // 33.3k counts
-
-    asm __volatile__( /* asm saved 3 words here */
-    "ldi  r22, %[CNT]       \n" /* uint8_t count */
-  "led_toggle:              \n"
-    "sbi  %[pLED], %[bLED]  \n" /* Toggle LED */
-    "ldi  r24, %[LDLY]      \n" /* uint16_t delay */ 
-    "ldi  r25, %[HDLY]      \n"
-  "led_delay:               \n"
-    "wdr                    \n" /* 1c watchdog reset */
-    "ldd  r23, Y+1          \n" /* 2c load UART Status Flag */
-    "sbiw r24, 1            \n" /* 2c subtract DELAY */
-    "sbrs r23, %[FLAG]      \n" /* 1c if RX Flag set, break delay loop */
-    "brne led_delay         \n" /* 2c branch only if delay is not zero or RX flag clear */
-    "subi r22, 1            \n" /* decrement count */
-    "brne led_toggle        \n" /* branch if count not zero */
-    ::  [CNT]  "n" (FLASH_COUNT),
-        [LDLY] "M" (LED_DELAY & 0xFF),
-        [HDLY] "M" (LED_DELAY >> 8),
-        [pLED] "I" (_SFR_MEM_ADDR(LED_PORT.IN)),
-        [bLED] "I" (__builtin_ctz(LED)),  /* count trailing zeros */
-        [FLAG] "I" (USART_RXCIF_bp)
-    : "r22", "r23", "r24", "r25");
-    //for (uint8_t count = 0; count < FLASH_COUNT; count++) {
-    //  LED_PORT.IN |= LED;
-    //  for(uint16_t delay = 0; delay < LED_DELAY; delay++) {
-    //    watchdogReset();
-    //    if (_usart->STATUS & USART_RXCIF_bm) {
-    //      break;
-    //    }
-    //  }
-    //}
+    /* Flash onboard LED to signal entering of bootloader */
+    flash_led();
   #else
     #if defined(LED_START_ON)
       #ifndef LED_INVERT
@@ -737,10 +694,11 @@ int main (void) {
         verifySpace();
     } else if (ch == STK_UNIVERSAL) {
       uint8_t cmd = getch();
+      (void) cmd; // in some configurations cmd might be unused.
       getch();    // read one more byte o that we will have enough space for the trailing
                   // bytes and EOP. Have to use this order so that gcc can optimize all getNch
-                  // and putch together at the end of the if else
-      #if ENABLE_CHIP_ERASE > 0
+                  // and putch together at the end of the if else (For chip erase support)
+      #if defined(ENABLE_CHIP_ERASE)
         if (cmd == AVR_OP_ERASE_FLASH) {
           erase_flash();
           getNch(2);  // 2+1 = 3 == UART FIFO Rx size. This allows us to erase and handle this later
@@ -779,7 +737,7 @@ int main (void) {
       verifySpace();
 
     /* Write up to 1 page of flash (or EEPROM, except that isn't supported due to space) */
-    } else if ((ch & ~0x10) == STK_PROG_PAGE) {   // ~0x10 == 0xEF == 0x74 and 0x64
+    } else if ((ch & 0xEF) == STK_PROG_PAGE) {   // 0xEF == ~0x10 == 0x74-0x64
       pagelen_t length;
       GETLENGTH(length);
       uint8_t desttype = getch();
@@ -875,8 +833,8 @@ uint8_t getch (void) {
     }
     GET_UART_DATA(ch);  // low byte has to be read first
     asm __volatile__(             // This asm saves a word
-      "ldd  r25, Y+1"     "\n\t"
-      "sbrs r25, %[bp]"   "\n\t"
+      "ldd  r25, Y+1"     "\n\t"  // as otherwise we would
+      "sbrs r25, %[bp]"   "\n\t"  // get a sbrs, rjmp+2, wdr
       "wdr"               "\n\t"
     :: [bp] "I" (USART_FERR_bp)
     : "r25");
@@ -885,7 +843,7 @@ uint8_t getch (void) {
       ;
     ch = MYUART.RXDATAL;
     uint8_t flags = MYUART.RXDATAH;
-    if ((flags & USART_FERR_bm) == 0)  // generates an ldd, sbrc, rjmp .+2, wdt.
+    if ((flags & USART_FERR_bm) == 0)  // generates an sbrc, rjmp .+2, wdt.
       watchdogReset();
   #endif
 
@@ -918,6 +876,32 @@ void verifySpace () {
 }
 
 
+// delay based on 4 MHz clock since that's what we have
+// This delay is calculated from 4,000,000 Hz CPU clock and the
+// desired frequency (15 Hz), and the duration of the loop (10 clocks)
+
+#if LED_START_FLASHES > 0
+  #if defined(LED_INVERT)
+    #define FLASH_COUNT (LED_START_FLASHES * 2) + 1
+  #else
+    #define FLASH_COUNT (LED_START_FLASHES * 2)
+  #endif
+
+  #define LED_DELAY ((4000000)/150)
+
+  void flash_led () {
+    for (uint8_t count = 0; count < FLASH_COUNT; count++) {
+      LED_PORT.IN |= LED;
+
+      for(uint16_t delay = 0; delay < LED_DELAY; delay++) {
+        watchdogReset();
+        if (_usart->STATUS & USART_RXCIF_bm) {
+          break;
+        }
+      }
+    }
+  }
+#endif
 
 /*
  * Change the watchdog configuration.
@@ -962,8 +946,12 @@ static inline void write_buffered_flash(length_t len) {
 
   #if (__AVR_ARCH__==103) && !defined(WRITE_MAPPED_BY_WORD)
     pDst.word += MAPPED_PROGMEM_START;
-    if (!(flash_clr == 0x00)) {
+    #if defined(ENABLE_CHIP_ERASE)
+      if (!(flash_clr == 0x00))
+    #endif
+    {
       nvm_cmd(NVMCTRL_CMD_FLPER_gc);
+
       *(pDst.bptr)=0xFF;
     }
     nvm_cmd(NVMCTRL_CMD_FLWR_gc);
@@ -1018,7 +1006,7 @@ static inline void write_buffered_flash(length_t len) {
 #elif (PROGMEM_SIZE==65536) // 64k
   #define MAX_ERASE_CNT (NVMCTRL_CMD_FLPER_gc + 6) /* 1 + 2 + 4 + 8 + 16 + 32*/
 #elif (PROGMEM_SIZE==131072) // 128k
-  #define MAX_ERASE_CNT (NVMCTRL_CMD_FLPER_gc + 8) /* 63 + 32 + 32 */
+  #define MAX_ERASE_CNT (NVMCTRL_CMD_FLPER_gc + 8) /* 64 + 32 + 32 */
 #endif
 
 
@@ -1074,6 +1062,7 @@ static inline void erase_flash(void) {
   [PGCT]  "I" (MAX_ERASE_CNT)                 /* combining loop counter and increment */
   : "r24", "r25", "r26", "r27", "r30", "r31");  /*  */
 
+
 #endif
 }
 
@@ -1128,47 +1117,6 @@ static inline void read_flash(uint8_t* src, pagelen_t length)
   #endif
 }
 
-#if OTA_COPY > 0
-__attribute__((section(".ota_copy"))) __attribute__((used)) __attribute__ ((naked)) static void ota_copy();
-
-static void ota_copy() {
-   __asm__ __volatile__(
-   "cli               \n"   /* No Interrupts allowed */
-   "ldi  r30,    0x00 \n"
-   "ldi  r31,    0x02 \n"    /* 0x0200, start of App, consider: Compiletime Constant */ 
-   "ota_erase:"
-   "ldi  r24, %[CMDA] \n"    /* load argument for page erase */
-   "rcall     nvm_cmd \n"    /* load command */
-   "spm               \n"    /* erase page */
-   "ldi  r24, %[CMDB] \n"    /* load argument for Flash write */
-   "rcall     nvm_cmd \n"    /* load command */
-   "ldi  r27, %[PSHI] \n"    /* load page size (512 == 0x0200) */
-   "ldi  r26, %[PSLO] \n"    /* word sized */
-   "ldi  r25,    0x01 \n"    /* known 0x01 for RAMPZ / Software Reset; r25 clobbered by nvm_cmd */
-   "ota_readWrite:    \n"    /* inter-page loop */
-   "out %[RMPZ],  r25 \n"    /* set RAMPZ (64k ORI the r31) */
-   "elpm     r0,   Z+ \n"    /* load Flash from 64k+ */
-   "elpm     r1,   Z+ \n"    /* plus not needed, but it's consistent this way */
-   "sbiw r30,    0x02 \n"    /* doesn't matter anyway */
-   "out %[RMPZ],   r1 \n"    /* clear RAMPZ (64k ANDI the r31) */
-   "spm               \n"    /* Program FLASH with r0 and r1  */
-   "adiw r30,    0x02 \n"    /* increment Z again */
-   "sbiw r26,    0x02 \n"    /* subtract inter-page counter */
-   "brne ota_readWrite\n"    /* non zero? jump back */
-   "cpi  r31,    0x00 \n"    /* if Z is 0x00xx, we're done */
-   "brne    ota_erase \n"    /* otherwise we must continue with the next page */
-   "sts %[SWRS], r25  \n"    /* Force a software reset */
-   "rjmp .-2          \n"    /* we've changed the Program, a ret will be BAAAAAD */
-   ::
-   [PSHI]  "I" (MAPPED_PROGMEM_PAGE_SIZE >> 8),     /* Page Size High Byte */
-   [PSLO]  "I" (MAPPED_PROGMEM_PAGE_SIZE & 0xFF),   /* Page Size Low Byte */
-   [CMDA]  "I" (NVMCTRL_CMD_FLPER_gc),         /* one page erase */
-   [CMDB]  "I" (NVMCTRL_CMD_FLWR_gc),          /* Flash Write */
-   [RMPZ]  "n" (_SFR_MEM_ADDR(RAMPZ)),
-   [SWRS]  "n" (_SFR_MEM_ADDR(RSTCTRL.SWRR))
-   : "r24", "r25", "r26", "r27", "r30", "r31");  /*  */
-}  
-#endif
 
 
 
