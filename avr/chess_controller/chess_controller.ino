@@ -54,8 +54,8 @@ uint8_t led_matrix[] = {
 
 uint8_t reed_matrix[8][8] = {};
 // Current state of the Piece at that position. 
-//~60 means its currently not there. At >80 it flips
-//~140 means its currently there. At <120 it flips.
+//~50 means its currently not there. At >100 it flips
+//~190 means its currently there. At <140 it flips.
 
 uint8_t reed_bool[8] = {};
 // Each Bit represents the current state of the reed Contact. (1= Active)
@@ -115,10 +115,10 @@ void loop() {
         //value = reed_matrix[i][j]
         //newReed = reed_bool[i] >> j
         if(newReed & 0x01) {                  // if figure placed
-          if (value < 150)                    // upper limit of 150
+          if (value <= 190)                   // upper limit of 190
             value += 1;                       // count up
         } else {                              // no figure placed
-          if (value > 50)                     // lower limit of 50
+          if (value >= 50)                    // lower limit of 50
             value -= 1;                       // count down
         }
         *(pOldReed++) = value;                // update value
@@ -127,47 +127,47 @@ void loop() {
     }
 
 
-    // Check if reed_matrix has to flip, else reset to base value (60 if no piece is there, 140 otherwise)
+    // Check if reed_matrix has to flip, else reset to base value (30 if no piece is there, 170 otherwise)
 
+    /*
+    if (line == '7') {
+      Serial.print(reed_matrix[7][0]);
+      Serial.print(reed_matrix[7][1]);
+      Serial.print(reed_matrix[7][2]);
+      Serial.print(reed_matrix[7][3]);
+      Serial.print(reed_matrix[7][4]);
+      Serial.print(reed_matrix[7][5]);
+      Serial.print(reed_matrix[7][6]);
+      Serial.println(reed_matrix[7][7]);
+    }
+    */
 
-    if (++all_lines_counter >= 24) {    // 24 iterations 
+    if (++all_lines_counter >= 60) {    // 60 iterations, if 50 were positive, a flip occurs
       all_lines_counter = 0;
       uint8_t *reed = &reed_matrix[0][0];
       
       for (uint8_t line = '1'; line <= '8'; line++) {
-        /*
-        if (line == '7') {
-          Serial.print(reed_matrix[7][0]);
-          Serial.print(reed_matrix[7][1]);
-          Serial.print(reed_matrix[7][2]);
-          Serial.print(reed_matrix[7][3]);
-          Serial.print(reed_matrix[7][4]);
-          Serial.print(reed_matrix[7][5]);
-          Serial.print(reed_matrix[7][6]);
-          Serial.println(reed_matrix[7][7]);
-        }
-        */
         for (uint8_t col = 'a'; col <= 'h'; col++) {
           uint8_t counter = *reed;
-          if (counter >= 100) {       // count up
-            if (counter <= 120) {     // counted "20 down"
-              counter = 60;           // piece removed
+          if (counter > 120) {       // count up
+            if (counter <= 140) {     // counted "50 down"
+              counter = 50;           // piece removed
               Serial.write(PIECE_TAKEN);
               Serial.write(col);
               Serial.write(line);
               Serial.write('\n');
             } else {
-              counter = 140;          // fall back to base
+              counter = 190;          // fall back to base
             }
           } else {
-            if (counter >= 80) {      // counted "20 up"
-              counter = 140;          // piece touched
+            if (counter >= 100) {     // counted "50 up"
+              counter = 190;            // piece touched
               Serial.write(PIECE_PLACED);
               Serial.write(col);
               Serial.write(line);
               Serial.write('\n');
             } else {
-              counter = 60;
+              counter = 50;
             }
           }
           *reed = counter;
@@ -227,7 +227,7 @@ void loop() {
         Serial.write(BOARD_LAYOUT);
         for (uint8_t line = '1'; line <= '8'; line++) {
           for (uint8_t col = 'a'; col <= 'h'; col++) {
-            if (*reed > 100) {
+            if (*reed > 120) {
               Serial.write(col);
               Serial.write(line);
               Serial.write(";");
@@ -280,7 +280,7 @@ void print_reed_board(void) {
     Serial.print(": ");
     uint8_t *reed_line = reed_matrix[line_num-'1'];
     for (uint8_t j = 0; j < 8; j++) {
-      if (*reed_line > 100)
+      if (*reed_line > 120)
         Serial.print('x');
       else
         Serial.print('_');
