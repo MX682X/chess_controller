@@ -2,7 +2,7 @@
  * Settings for the board:
  * DB-Series
  * AVR64DB64 (optiboot)
- * Clock Speed: Min 8 MHz, internal
+ * Clock Speed: Min 24 MHz, internal
  * Bootloader Serial port: PC0, PC1
  * MVIO: Enabled
  * 
@@ -30,6 +30,7 @@
 #define REED_VPORT    VPORTE
 #define LED_VPORT     VPORTB
 #define COM_VPORT     VPORTA
+
 
 #define DELTIME 100
 
@@ -76,10 +77,10 @@ void setup() {
   TCB4.INTFLAGS = 0x03; // Clear ISR Flags
   TCB4.INTCTRL = 0x02;  // Overflow ISR
   //TCB4.CCMP = (F_CPU/2) / (8*40); // 320 LPS
-  // 16MHz / 2 = 8MHz
-  // 8MHz / 31250 = 256
+  // 24MHz / 2 = 12MHz
+  // 12MHz / 46875 = 256
   // 256 / 8 lines = 32 FPS 
-  TCB4.CCMP = 31250;
+  TCB4.CCMP = 46875;
   TCB4.CTRLA = TCB_CLKSEL_DIV2_gc | TCB_ENABLE_bm;
   
   digitalWriteFast(PIN_PD0, HIGH);  // "disable" LED
@@ -126,6 +127,7 @@ void loop() {
 
 
     // Check if reed_matrix has to flip, else reset to base value (60 if no piece is there, 140 otherwise)
+
 
     if (++all_lines_counter >= 24) {    // 24 iterations 
       all_lines_counter = 0;
