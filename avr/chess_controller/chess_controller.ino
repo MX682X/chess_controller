@@ -324,14 +324,14 @@ ISR(TCB4_INT_vect) {
   reed_bool[line - 1]   = REED_VPORT.IN; // save reed info
   COM_VPORT.OUT = 0x00;               // disable com Transistors
   if (com == 0x00) {
-    COM_VPORT.OUT = 0x01;             // enable first com transistor
     LED_VPORT.OUT = current_leds[0];  // load new LED state
+    COM_VPORT.OUT = 0x01;             // enable first com transistor
     ACQ_STATUS |= 0x01;               // indicator for "all 8"
     CURR_LINE = 0x00;
     VPORTD.IN |= 0x01;                // activity PD0 (toggle)
   } else {
-    COM_VPORT.OUT = com;              // enable next com transistor
     LED_VPORT.OUT = current_leds[line];  // load new LED state
+    COM_VPORT.OUT = com;              // enable next com transistor
     CURR_LINE = line;                   // update Current line
   }
   TCB4.INTFLAGS = 0x03;
