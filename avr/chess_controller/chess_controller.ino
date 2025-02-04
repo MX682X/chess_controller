@@ -80,7 +80,7 @@ void setup() {
   // 24MHz / 2 = 12MHz
   // 12MHz / 46875 = 256
   // 256 / 8 lines = 32 FPS 
-  TCB4.CCMP = 46875;
+  TCB4.CCMP = 65000;
   TCB4.CTRLA = TCB_CLKSEL_DIV2_gc | TCB_ENABLE_bm;
   
   digitalWriteFast(PIN_PD0, HIGH);  // "disable" LED
@@ -194,6 +194,11 @@ void loop() {
       }
       number -= 1; // adjust 1~8 to 0~7
 
+      Serial.print(cmd);
+      Serial.print(letter);
+      Serial.print(number);
+      Serial.write("\n");
+
       if (number < 8) {   // Try to handle LED commands first, it's mostly those 
         if (letter < 8) {
           uint8_t bit_pos = 1 << letter;
@@ -221,12 +226,12 @@ void loop() {
         if (number < 8) { // n*1
           led_matrix[number] = 0x00;
         }
-      } else if (cmd == GET_BOARD) {        // prints "va1;12;b3;...;\n" where a piece is placed
+      } else if (cmd == GET_BOARD) {        // prints "va1;a2;b3;...;\n" where a piece is placed
         uint8_t *reed = &reed_matrix[0][0];
         Serial.write(BOARD_LAYOUT);
         for (uint8_t line = '1'; line <= '8'; line++) {
           for (uint8_t col = 'a'; col <= 'h'; col++) {
-            if (*reed > 120) {
+            if (*reed > 100) {
               Serial.write(col);
               Serial.write(line);
               Serial.write(";");
