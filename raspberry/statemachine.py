@@ -54,37 +54,19 @@ class Machine:
     def poslist(self):
         rlist = []
 
-        self.con.write(b"r\n")
+        self.con.write(b"b\n")
 
         while True:
             if self.con.in_waiting != 0:
-                data = self.con.readline()
-                strdata = data.decode("utf-8").strip()
+                data = self.con.readline().decode("utf-8")
 
-                rlist.append(strdata)
-                if len(rlist) >= 8:
-                    break
-
-        self.con.readline()
-        return parseR(rlist)
+                if data[0] == "v":
+                    if data == "v":
+                        return []
+                    else:
+                        return data[1:-1].split(";")
 
 
 
-def parseR(rlist: list[str]):
-    placed = []
-    row = 8
-    for rowstr in rlist:
-        # print(rowstr)
 
-        for col in range(1, 9):
-            x = rowstr[col * 2 + 1]
-            match x:
-                case "x":
-                    placed.append(chr(col + 96) + str(row))
-                case "_":
-                    pass
-                case y:
-                    logging.warning(f"Expectet to find x or _. Found {y}")
 
-        row -= 1
-    return placed
