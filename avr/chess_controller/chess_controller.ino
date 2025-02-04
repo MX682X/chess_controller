@@ -80,7 +80,7 @@ void setup() {
   // 24MHz / 2 = 12MHz
   // 12MHz / 46875 = 256
   // 256 / 8 lines = 32 FPS 
-  TCB4.CCMP = 65000;
+  TCB4.CCMP = 46875;
   TCB4.CTRLA = TCB_CLKSEL_DIV2_gc | TCB_ENABLE_bm;
   
   digitalWriteFast(PIN_PD0, HIGH);  // "disable" LED
@@ -95,9 +95,10 @@ void setup() {
   boot_splash();
 }
 
+uint8_t serial_input_buffer[8] = {};
+uint8_t serial_position = 0;
+
 void loop() {
-  uint8_t serial_input_buffer[8] = { 0x00 };
-  uint8_t serial_position = 0;
 
   // change reed_matrix according to reed_bool
   // increase if active, decrease when inactive
@@ -193,11 +194,6 @@ void loop() {
         letter -= 'A';
       }
       number -= 1; // adjust 1~8 to 0~7
-
-      Serial.print(cmd);
-      Serial.print(letter);
-      Serial.print(number);
-      Serial.write("\n");
 
       if (number < 8) {   // Try to handle LED commands first, it's mostly those 
         if (letter < 8) {
