@@ -71,7 +71,7 @@ void setup() {
   PORTA.DIR = 0xFF; // Set all Common Pins to OUTPUT
   PORTB.DIR = 0xFF; // Set all LED Pins to OUTPUT
 
-  PORTE.PINCONFIG = PORT_INVEN_bm | PORT_PULLUPEN_bm; // Set all PORTE Pins to Input PULLUP and invert them to get positive logic (1 = piece)  
+  PORTE.PINCONFIG = PORT_INVEN_bm | PORT_INLVL_bm | PORT_PULLUPEN_bm; // Set all PORTE Pins to Input PULLUP and invert them to get positive logic (1 = piece)  
   PORTE.PINCTRLUPD = 0xFF;
 
   TCB4.INTFLAGS = 0x03; // Clear ISR Flags
@@ -99,84 +99,8 @@ uint8_t serial_input_buffer[8] = {};
 uint8_t serial_position = 0;
 
 void loop() {
+  handle_reed_scan();
 
-  // change reed_matrix according to reed_bool
-  // increase if active, decrease when inactive
-  // no overflow (>150) or underflow (<50)
-
-  if (ACQ_STATUS & 0x01) {                    // all lines scanned
-    ACQ_STATUS &= ~0x01;                      // clear Flag
-    uint8_t *pNewReed = &reed_bool[0];        // contains the current state of the reed contacts
-    uint8_t *pOldReed = &reed_matrix[0][0];   // contains a byte per reed as a counter to low-pass filter
-    for (uint8_t i = 0; i < 8; i++) {         // go through every line
-      uint8_t newReed = *(pNewReed++);
-      for (uint8_t j = 0; j < 8; j++) {       // go through each column
-        uint8_t value = *pOldReed;
-        //value = reed_matrix[i][j]
-        //newReed = reed_bool[i] >> j
-        if(newReed & 0x01) {                  // if figure placed
-          if (value <= 190)                   // upper limit of 190
-            value += 1;                       // count up
-        } else {                              // no figure placed
-          if (value >= 50)                    // lower limit of 50
-            value -= 1;                       // count down
-        }
-        *(pOldReed++) = value;                // update value
-        newReed >>= 1;
-      }
-    }
-
-
-    // Check if reed_matrix has to flip, else reset to base value (30 if no piece is there, 170 otherwise)
-
-    /*
-    if (line == '7') {
-      Serial.print(reed_matrix[7][0]);
-      Serial.print(reed_matrix[7][1]);
-      Serial.print(reed_matrix[7][2]);
-      Serial.print(reed_matrix[7][3]);
-      Serial.print(reed_matrix[7][4]);
-      Serial.print(reed_matrix[7][5]);
-      Serial.print(reed_matrix[7][6]);
-      Serial.println(reed_matrix[7][7]);
-    }
-    */
-
-    if (++all_lines_counter >= 60) {    // 60 iterations, if 50 were positive, a flip occurs
-      all_lines_counter = 0;
-      uint8_t *reed = &reed_matrix[0][0];
-      
-      for (uint8_t line = '1'; line <= '8'; line++) {
-        for (uint8_t col = 'a'; col <= 'h'; col++) {
-          uint8_t counter = *reed;
-          if (counter > 120) {       // count up
-            if (counter <= 140) {     // counted "50 down"
-              counter = 50;           // piece removed
-              Serial.write(PIECE_TAKEN);
-              Serial.write(col);
-              Serial.write(line);
-              Serial.write('\n');
-            } else {
-              counter = 190;          // fall back to base
-            }
-          } else {
-            if (counter >= 100) {     // counted "50 up"
-              counter = 190;            // piece touched
-              Serial.write(PIECE_PLACED);
-              Serial.write(col);
-              Serial.write(line);
-              Serial.write('\n');
-            } else {
-              counter = 50;
-            }
-          }
-          *reed = counter;
-          reed++;
-        }
-      }
-    }
-
-  }
   while (Serial.available()) {
     uint8_t ch = Serial.read();
 
@@ -254,6 +178,75 @@ void loop() {
   }
 }
 
+// change reed_matrix according to reed_bool
+// increase if active, decrease when inactive
+// no overflow (>150) or underflow (<50)
+
+void handle_reed_scan(void) {
+  if (ACQ_STATUS & 0x01) {                    // all lines scanned
+    ACQ_STATUS &= ~0x01;                      // clear Flag
+    uint8_t *pNewReed = &reed_bool[0];        // contains the current state of the reed contacts
+    uint8_t *pOldReed = &reed_matrix[0][0];   // contains a byte per reed as a counter to low-pass filter
+    for (uint8_t i = 0; i < 8; i++) {         // go through every line
+      uint8_t newReed = *(pNewReed++);
+      for (uint8_t j = 0; j < 8; j++) {       // go through each column
+        uint8_t value = *pOldReed;
+        //value = reed_matrix[i][j]
+        //newReed = reed_bool[i] >> j
+        if(newReed & 0x01) {                  // if figure placed
+          if (value < 200)                    // upper limit of 190 + 10
+            *pOldReed = value + 1;            // count up
+        } else {                              // no figure placed
+          if (value > 40)                     // lower limit of 50 - 10
+            *pOldReed = value - 1;            // count down
+        }
+        pOldReed++;
+        newReed /= 2;
+      }
+    }
+    notify_takes_places();
+  }
+}
+
+// Check if reed_matrix has to flip, else reset to base value (30 if no piece is there, 170 otherwise)
+void notify_takes_places(void) {
+  static uint8_t all_lines_counter = 0;
+  all_lines_counter += 1;
+  if (all_lines_counter >= 60) {    // 60 iterations, if 50 were positive, a flip occurs
+    all_lines_counter = 0;
+    uint8_t *reed = &reed_matrix[0][0];
+    
+    for (uint8_t line = '1'; line <= '8'; line++) {
+      for (uint8_t col = 'a'; col <= 'h'; col++) {
+        uint8_t counter = *reed;
+        if (counter > 120) {       // count up
+          if (counter <= 140) {     // counted "50 down"
+            counter = 50;           // piece removed
+            Serial.write(PIECE_TAKEN);
+            Serial.write(col);
+            Serial.write(line);
+            Serial.write('\n');
+          } else {
+            counter = 190;          // fall back to base
+          }
+        } else {
+          if (counter >= 100) {     // counted "50 up"
+            counter = 190;            // piece touched
+            Serial.write(PIECE_PLACED);
+            Serial.write(col);
+            Serial.write(line);
+            Serial.write('\n');
+          } else {
+            counter = 50;
+          }
+        }
+        *reed = counter;
+        reed++;
+      }
+    }
+  }
+}
+
 void print_led_board(void) {
   for (uint8_t line_num = '8'; line_num >= '1'; line_num--) {
     Serial.write(line_num);
@@ -320,9 +313,10 @@ void boot_splash(void) {
 
 
 ISR(TCB4_INT_vect) {
-  uint8_t line = CURR_LINE + 1;       // use GPIO Reg for faster access
+  uint8_t line = CURR_LINE;           // use GPIO Reg for faster access
   uint8_t com = COM_VPORT.OUT << 1;   // get current active com transistor
-  reed_bool[line - 1]   = REED_VPORT.IN; // save reed info
+  reed_bool[line] = REED_VPORT.IN;    // save reed info
+  line += 1;
   COM_VPORT.OUT = 0x00;               // disable com Transistors
   if (com == 0x00) {
     LED_VPORT.OUT = current_leds[0];  // load new LED state
