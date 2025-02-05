@@ -14,6 +14,4 @@ class ledboard:
         self.con.write(s.encode())
 
     def clrall(self):
-        for row in range(1, 9):
-            for col in range(97, 97 + 8):
-                self.led_turnoff( chr(col) + str(row))
+        self.con.write(b"o\n")

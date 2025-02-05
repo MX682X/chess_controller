@@ -1,5 +1,6 @@
 import logging
 from logging import warning
+from time import sleep
 
 import chess.engine
 import serial
@@ -14,7 +15,7 @@ logging.getLogger().setLevel(logging.INFO)
 arduino = serial.Serial(port=port, baudrate=115200, timeout=.1)
 arduino.reset_input_buffer()
 
-engine = chess.engine.SimpleEngine.popen_uci(path)
+engine = chess.engine.SimpleEngine.popen_uci(path,timeout=20)
 display = DISPLAY(dispport)
 CH = cmd_file.CMD_HANDLER()
 
@@ -49,6 +50,7 @@ while True:
         activecmdlist.append(display.get_button_Cmc())
 
     while len(activecmdlist) != 0:
+        logging.info(f"CMD: {activecmdlist[-1]}")
         match activecmdlist.pop():
             case "stop":
                 print("stopping")
@@ -76,6 +78,8 @@ while True:
 
     if exitflag:
         break
+
+    sleep(0.01)
 
 CH.cmd_close()
 engine.close()

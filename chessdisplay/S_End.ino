@@ -12,7 +12,7 @@ void lv_create_s_1_2_b(lv_obj_t* parent) {
 
 void lv_create_s_1_2_w(lv_obj_t* parent) {
   lv_obj_t* text_label = lv_label_create(parent);
-  lv_label_set_text(text_label, "Sieg fuer Weiß!");
+  lv_label_set_text(text_label, "Sieg fuer Weis!");
 
   lv_obj_set_style_text_align(text_label, LV_TEXT_ALIGN_CENTER, 0);
   lv_obj_set_style_text_font(text_label, &lv_font_montserrat_22, 0);
@@ -56,5 +56,5 @@ void transition_s_1_2(String type) {
     return;
   }
     lv_screen_load_anim(scene_1_2, LV_SCR_LOAD_ANIM_MOVE_TOP, 1000, 0, true);
-  activeScene = S1_2;
+  activeScene = S_End;
 }

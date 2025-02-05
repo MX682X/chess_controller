@@ -6,13 +6,13 @@ void lv_create_s_0(lv_obj_t* parent) {
   lv_obj_set_style_text_font(text_label, &lv_font_montserrat_22, 0);
 }
 
-void transition_s_0() {
-  if (activeScene == S0) {
+void transition_s_Discon() {
+  if (activeScene == S_Discon) {
     return;
   }
 
   lv_obj_t* scene_0 = lv_obj_create(NULL);
   lv_create_s_0(scene_0);
   lv_screen_load(scene_0);
-  activeScene = S0;
+  activeScene = S_Discon;
 }

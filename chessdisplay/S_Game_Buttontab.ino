@@ -6,7 +6,7 @@ char TB_Text[] = "TB";
 char RES_Text[] = "RES";
 char STB_Text[] = "STB";
 
-void lv_create_s_1_1(lv_obj_t* parent) {
+void lv_create_buttontab(lv_obj_t* parent) {
   //lable
   lv_obj_t* lable_1_1_parent = lv_obj_create(parent);
   lable_1_1 = lv_label_create(lable_1_1_parent);
@@ -68,17 +68,8 @@ void lable_1_1_rm() {
 
 static void btn_1_1_callback(lv_event_t* e) {
 
-  Serial.print("COM:BTN1_1:");
+  Serial.print("Game_BTN:");
   Serial.println((char*)lv_event_get_user_data(e));
 }
 
-void transition_s_1_1() {
-  if (activeScene == S1_1) {
-    return;
-  }
 
-  lv_obj_t* scene_1_1 = lv_obj_create(NULL);
-  lv_create_s_1_1(scene_1_1);
-  lv_screen_load_anim(scene_1_1, LV_SCR_LOAD_ANIM_MOVE_TOP, 1000, 0, true);
-  activeScene = S1_1;
-}

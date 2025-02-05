@@ -60,18 +60,18 @@ void lv_create_s_1_0(lv_obj_t* parent) {
 
 static void btn_1_0_callback(lv_event_t* e) {
 
-  Serial.print("COM:BTN1_0:");
+  Serial.print("Choice:");
   Serial.println((char*)lv_event_get_user_data(e));
 }
 
 
-void transition_s_1_0() {
-  if (activeScene == S1_0) {
+void transition_s_Choice() {
+  if (activeScene == S_Choice) {
     return;
   }
 
   lv_obj_t* scene_1_0 = lv_obj_create(NULL);
   lv_create_s_1_0(scene_1_0);
   lv_screen_load(scene_1_0);
-  activeScene = S1_0;
+  activeScene = S_Choice;
 }
