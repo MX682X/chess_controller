@@ -74,14 +74,16 @@ class DISPLAY:
             return
 
 
-        if strdata.startswith("Game:"):
+        if strdata.startswith("Game_BTN:"):
             match strdata:
-                case "Game:TB":
+                case "Game_BTN:TB":
                     return "takeback"
-                case "Game:RES":
+                case "Game_BTN:RES":
                     return "Resign"
-                case "Game:STB":
+                case "Game_BTN:STB":
                     return "stable"
+                case x:
+                    logging.warning(f"Unknown Command: {x}")
         elif strdata.startswith("Choice:"):
             return strdata[-2:]
         else:
@@ -95,5 +97,5 @@ class DISPLAY:
         self.conn.write(("Game:fen:" + fen+"\n").encode("utf-8"))
 
     def close(self):
-        self.conn.write(b"COM:discon\n")
+        self.conn.write(b"discon\n")
         self.conn.close()

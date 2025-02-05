@@ -18,7 +18,7 @@ class stablestate(States.basestate.State):
         logging.info("Activating Stablestate")
         self.machine.State = self
 
-
+        self.machine.disp_update()
 
         self.machine.leds.clrall()
         self.zuviel = []
@@ -36,12 +36,12 @@ class stablestate(States.basestate.State):
         for i in self.fehlt:
             self.machine.leds.led_turnon(i)
 
-        #self.zuviel contains all squares where there is a Piece but should not be
-        #self.fehlt contains all squares where there is not a Piece but should be
+        # self.zuviel contains all squares where there is a Piece but should not be
+        # self.fehlt contains all squares where there is not a Piece but should be
 
-        #All squares on those lists should be illuminated
+        # All squares on those lists should be illuminated
 
-        #The extraturnon Square is also illuminated
+        # The extraturnon Square is also illuminated
 
         if extraturnon is not None:
             self.machine.leds.led_turnon(extraturnon)
@@ -76,7 +76,6 @@ class stablestate(States.basestate.State):
 
         if self.fehlt == [] and self.zuviel == []:
             self.machine.movestate.activate()
-
 
     def takeback(self):
         self.machine.board.pop()

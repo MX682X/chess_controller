@@ -23,7 +23,7 @@ class movestate(States.basestate.State):
 
         #If it's the Computers Turn, let him Move
         if self.machine.board.turn == self.machine.comcoluour:
-            result = self.machine.engine.play(self.machine.board, chess.engine.Limit(time=0.01))
+            result = self.machine.engine.play(self.machine.board, chess.engine.Limit(time=0.1))
             self.machine.board.push(result.move)
 
             self.machine.display.Addline("COM Move: " + result.move.uci())
