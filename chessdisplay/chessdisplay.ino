@@ -77,7 +77,6 @@ void lv_create_main_gui(void) {
 
   lv_create_s_0(lv_screen_active());
   activeScene = S_Discon;
-
 }
 
 
@@ -142,20 +141,18 @@ void loop() {
       return;
     }
 
-    if (activeScene == S_Game){
+    if (activeScene == S_Game) {
       // Commands only avalible in Game Scene
-        if (myString == "Game:rm") {
-          lable_1_1_rm();
-        } else if (myString == "Game:clr") {
-          lable_1_1_clear();
-        } else if (myString.startsWith("Game:push:")) {
-          lable_1_1_push(myString.substring(10));
-        }else if(myString.startsWith("Game:fen:")){
-          set_board_fen(myString.substring(9).c_str());
-        }
-
+      if (myString == "Game:rm") {
+        lable_1_1_rm();
+      } else if (myString == "Game:clr") {
+        lable_1_1_clear();
+      } else if (myString.startsWith("Game:push:")) {
+        lable_1_1_push(myString.substring(10));
+      } else if (myString.startsWith("Game:fen:")) {
+        set_board_fen(myString.substring(9).c_str());
+      }
     }
-
   }
 
 
