@@ -36,6 +36,8 @@ class Machine:
 
         self.comcoluour: chess.Color = None;
 
+        self.skilllevel = 20
+
         self.State = None
         self.choicestate.activate()
 

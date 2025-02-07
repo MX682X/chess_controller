@@ -41,10 +41,10 @@ class endstate(States.basestate.State):
         game.headers["Date"] = datetime.now().strftime("%Y.%m.%d")
 
         if self.machine.comcoluour == chess.BLACK:
-            game.headers["Black"] = "Stockfish"
+            game.headers["Black"] = f"Stockfish (Level {self.machine.skilllevel})"
 
         if self.machine.comcoluour == chess.WHITE:
-            game.headers["White"] = "Stockfish"
+            game.headers["White"] = f"Stockfish (Level {self.machine.skilllevel})"
 
         with open(com_filename, "w") as f:
             exporter = chess.pgn.FileExporter(f)

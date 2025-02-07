@@ -24,16 +24,18 @@ class Choicestate(States.basestate.State):
 
         match colur:
             case "CB":
-                self.machine.comcoluour = chess.BLACK
+                self.machine.comcoluour = chess.WHITE
             case"CR":
                 self.machine.comcoluour = choice([chess.BLACK,chess.WHITE])
             case "CW":
-                self.machine.comcoluour = chess.WHITE
+                self.machine.comcoluour = chess.BLACK
             case x:
                 logging.warning(f"Unknown colour {x}. Choosing random Colour instead")
                 self.machine.comcoluour = choice([chess.BLACK, chess.WHITE])
 
         self.machine.engine.configure({"Skill Level": strength})
+
+        self.machine.skilllevel = strength
 
         self.machine.display.setscene("Game")
         self.machine.display.Addline("Waiting for Startposition")
