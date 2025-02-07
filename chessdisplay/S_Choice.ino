@@ -136,6 +136,7 @@ void lv_create_skilltab(lv_obj_t* parent) {
                         LV_ROLLER_MODE_INFINITE);
 
   lv_roller_set_visible_row_count(skill_roller, 4);
+  lv_roller_set_selected(skill_roller,10,LV_ANIM_OFF);
 
   lv_obj_align(skill_roller,LV_ALIGN_RIGHT_MID, -15, 0);
 }
