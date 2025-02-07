@@ -15,16 +15,14 @@ logging.getLogger().setLevel(logging.INFO)
 arduino = serial.Serial(port=port, baudrate=115200, timeout=.1)
 arduino.reset_input_buffer()
 
-engine = chess.engine.SimpleEngine.popen_uci(path,timeout=20)
+engine = chess.engine.SimpleEngine.popen_uci(path, timeout=20)
 display = DISPLAY(dispport)
 CH = cmd_file.CMD_HANDLER()
 
 machine = statemachine.Machine(engine, display, arduino)
 
-
 activecmdlist = []
 exitflag = False
-
 
 logging.info("Beginning with loop")
 
@@ -51,6 +49,7 @@ while True:
 
     while len(activecmdlist) != 0:
         logging.info(f"CMD: {activecmdlist[-1]}")
+
         match activecmdlist.pop():
             case "stop":
                 print("stopping")
@@ -63,18 +62,15 @@ while True:
             case "stable":
                 machine.State.Stabilise()
 
-            case "CB":
-                machine.State.cblack()
-            case "CW":
-                machine.State.cwhite()
-            case "CR":
-                machine.State.crand()
-
             case None:
                 pass
 
-            case _:
-                warning("Unknown Command. How did it get to main?")
+            case x:
+                if x.startswith("Choice:"):
+                    splitcom = x.split(":")
+                    machine.State.choice(splitcom[1], int(splitcom[2]))
+                else:
+                    warning("Unknown Command. How did it get to main?")
 
     if exitflag:
         break

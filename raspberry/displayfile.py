@@ -85,7 +85,7 @@ class DISPLAY:
                 case x:
                     logging.warning(f"Unknown Command: {x}")
         elif strdata.startswith("Choice:"):
-            return strdata[-2:]
+            return strdata
         else:
             logging.warning(f"Expected buttoncommand from scene Game. Got: {strdata}")
 

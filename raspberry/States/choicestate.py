@@ -20,24 +20,23 @@ class Choicestate(States.basestate.State):
         self.machine.State = self
         self.machine.display.setscene("Choice")
 
-    def cblack(self):
-        self.machine.comcoluour = chess.WHITE
+    def choice(self,colur:str,strength:int):
+
+        match colur:
+            case "CB":
+                self.machine.comcoluour = chess.BLACK
+            case"CR":
+                self.machine.comcoluour = choice([chess.BLACK,chess.WHITE])
+            case "CW":
+                self.machine.comcoluour = chess.WHITE
+            case x:
+                logging.warning(f"Unknown colour {x}. Choosing random Colour instead")
+                self.machine.comcoluour = choice([chess.BLACK, chess.WHITE])
+
+        self.machine.engine.configure({"Skill Level": strength})
 
         self.machine.display.setscene("Game")
         self.machine.display.Addline("Waiting for Startposition")
 
         self.machine.stablestate.activate()
 
-    def cwhite(self):
-        self.machine.comcoluour = chess.BLACK
-
-        self.machine.display.setscene("Game")
-        self.machine.display.Addline("Waiting for Startposition")
-
-        self.machine.stablestate.activate()
-
-    def crand(self):
-        if choice([True, False]):
-            self.cblack()
-        else:
-            self.cwhite()
