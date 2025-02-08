@@ -4,6 +4,7 @@ from random import choice
 import chess
 
 import States.basestate
+from cmd_file import Choice
 
 # Hack for IDE Support
 if False:
@@ -19,6 +20,13 @@ class Choicestate(States.basestate.State):
 
         self.machine.State = self
         self.machine.display.setscene("Choice")
+
+    def command_handle(self,command):
+        if isinstance(command,Choice):
+            self.choice(command.ColorChoice,command.Skill_Level)
+        else:
+            logging.warning(f"Unknown Command: {command}")
+
 
     def choice(self,colur:str,strength:int):
 

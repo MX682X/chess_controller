@@ -8,6 +8,7 @@ import serial
 
 import cmd_file
 import statemachine
+from cmd_file import BaseCommand
 from config import dispport, path, port
 from displayfile import DISPLAY
 
@@ -56,29 +57,34 @@ while True:
         activecmdlist.append(display.get_button_Cmc())
 
     while len(activecmdlist) != 0:
-        logging.info(f"CMD: {activecmdlist[-1]}")
+        cmd = activecmdlist.pop()
 
-        match activecmdlist.pop():
-            case "stop":
+        if not isinstance(cmd,BaseCommand):
+            warning(f"The following is not a Command {cmd}. Ignoring it.")
+            continue
+
+
+        logging.info(f"CMD: {cmd}")
+
+        match type(cmd):
+            case cmd_file.Stop:
                 print("stopping")
                 machine.State.stop()
                 exitflag = True
 
-            case "takeback":
+            case cmd_file.Takeback:
                 machine.State.takeback()
 
-            case "stable":
+            case cmd_file.Stabilise:
                 machine.State.Stabilise()
+
 
             case None:
                 pass
 
             case x:
-                if x.startswith("Choice:"):
-                    splitcom = x.split(":")
-                    machine.State.choice(splitcom[1], int(splitcom[2]))
-                else:
-                    warning("Unknown Command. How did it get to main?")
+                logging.info("Command with no prefab. Taking it to the State.")
+                machine.State.command_handle(cmd)
 
     if exitflag:
         break

@@ -5,6 +5,8 @@ from time import sleep
 import chess
 import serial
 
+from cmd_file import Takeback, Resign, Stabilise, Choice
+
 
 class DISPLAY:
     def __init__(self, port):
@@ -77,15 +79,16 @@ class DISPLAY:
         if strdata.startswith("Game_BTN:"):
             match strdata:
                 case "Game_BTN:TB":
-                    return "takeback"
+                    return Takeback()
                 case "Game_BTN:RES":
-                    return "Resign"
+                    return Resign()
                 case "Game_BTN:STB":
-                    return "stable"
+                    return Stabilise()
                 case x:
                     logging.warning(f"Unknown Command: {x}")
         elif strdata.startswith("Choice:"):
-            return strdata
+            l = strdata.split(":")
+            return Choice(l[1],int(l[2]))
         else:
             logging.warning(f"Expected buttoncommand from scene Game. Got: {strdata}")
 
