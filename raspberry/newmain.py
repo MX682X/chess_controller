@@ -1,3 +1,4 @@
+import argparse
 import logging
 from logging import warning
 from time import sleep
@@ -12,14 +13,21 @@ from displayfile import DISPLAY
 
 logging.getLogger().setLevel(logging.INFO)
 
+parser = argparse.ArgumentParser()
+
+parser.add_argument("--fen", help="Start the board with the given fen Position. Defaults to Standart Start position.")
+
+args = parser.parse_args()
+
 arduino = serial.Serial(port=port, baudrate=115200, timeout=.1)
 arduino.reset_input_buffer()
 
 engine = chess.engine.SimpleEngine.popen_uci(path, timeout=20)
+
 display = DISPLAY(dispport)
 CH = cmd_file.CMD_HANDLER()
 
-machine = statemachine.Machine(engine, display, arduino)
+machine = statemachine.Machine(engine, display, arduino, startposition=args.fen)
 
 activecmdlist = []
 exitflag = False
