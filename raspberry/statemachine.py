@@ -7,6 +7,7 @@ import States.choicestate
 import States.endstate
 import States.movestate
 import States.stablestate
+import cmd_file
 import displayfile
 from ledboard import ledboard
 from movehandlerfile import MOVEHANDLER
@@ -35,8 +36,9 @@ class Machine:
         self.endstate = States.endstate.endstate(self)
 
         self.comcoluour: chess.Color = None;
-
         self.skilllevel = 20
+
+        self.exitflag = False
 
         self.State = None
         self.choicestate.activate()
@@ -50,6 +52,34 @@ class Machine:
     def disp_update(self):
         """Update the Board on the Display to reflect the Board"""
         self.display.set_fen(self.board)
+
+    def exec_command(self,command):
+        """Execute the given Command"""
+
+        if not isinstance(command, cmd_file.BaseCommand):
+            logging.warning(f"The following is not a Command {command}. Ignoring it.")
+            return
+
+        logging.info(f"CMD: {command}")
+
+        match type(command):
+            case cmd_file.Stop:
+                print("stopping")
+                self.State.stop()
+                self.exitflag = True
+
+            case cmd_file.Takeback:
+                self.State.takeback()
+
+            case cmd_file.Stabilise:
+                self.State.Stabilise()
+
+            case None:
+                pass
+
+            case x:
+                logging.info("Command with no prefab. Taking it to the State.")
+                self.State.command_handle(command)
 
     # TODO denhier Erneuern
     @property

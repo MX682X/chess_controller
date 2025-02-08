@@ -49,44 +49,12 @@ while True:
     # TODO CMDhandling neu
 
     if CH.cmd_ready():
-        # print("CMD")
-        activecmdlist.append(CH.get_cmd())
+        machine.exec_command(CH.get_cmd())
 
     if display.button_Cmd_ready():
-        logging.info("got buttoncmd")
-        activecmdlist.append(display.get_button_Cmc())
+        machine.exec_command(display.get_button_Cmc())
 
-    while len(activecmdlist) != 0:
-        cmd = activecmdlist.pop()
-
-        if not isinstance(cmd,BaseCommand):
-            warning(f"The following is not a Command {cmd}. Ignoring it.")
-            continue
-
-
-        logging.info(f"CMD: {cmd}")
-
-        match type(cmd):
-            case cmd_file.Stop:
-                print("stopping")
-                machine.State.stop()
-                exitflag = True
-
-            case cmd_file.Takeback:
-                machine.State.takeback()
-
-            case cmd_file.Stabilise:
-                machine.State.Stabilise()
-
-
-            case None:
-                pass
-
-            case x:
-                logging.info("Command with no prefab. Taking it to the State.")
-                machine.State.command_handle(cmd)
-
-    if exitflag:
+    if machine.exitflag:
         break
 
     sleep(0.01)
