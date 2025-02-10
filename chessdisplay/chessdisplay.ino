@@ -37,7 +37,8 @@ uint32_t lastTick = 0;  //Used to track the tick timer
 enum Scenes { S_Discon,
               S_Choice,
               S_Game,
-              S_End };
+              S_End,
+              S_Loading };
 
 Scenes activeScene;
 
@@ -135,6 +136,9 @@ void loop() {
     }
     if (myString == "SC:Choice") {
       transition_s_Choice();
+    }
+    if (myString == "SC:Loading") {
+      transition_s_Loading();
     }
     if (myString.startsWith("SC:end:")) {
       transition_s_1_2(myString.substring(7));
