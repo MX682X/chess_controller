@@ -22,9 +22,10 @@ args = parser.parse_args()
 IO_Board = serial.Serial(port=port, baudrate=115200, timeout=.1)
 IO_Board.reset_input_buffer()
 
-engine = chess.engine.SimpleEngine.popen_uci(path, timeout=20)
-
 display = DISPLAY(dispport)
+display.setscene("Loading")
+
+engine = chess.engine.SimpleEngine.popen_uci(path, timeout=20)
 
 if not args.nocli:
     CH = cmd_file.CMD_HANDLER()
