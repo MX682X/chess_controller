@@ -17,7 +17,7 @@ class Machine:
     def __init__(self,
                  engine: chess.engine.SimpleEngine,
                  display: displayfile.DISPLAY,
-                 con: serial.serialposix.Serial,
+                 IO_Board: serial.serialposix.Serial,
                  startposition: str = None):
 
         if startposition is None:
@@ -27,8 +27,8 @@ class Machine:
         self.engine = engine
         self.display = display
         self.Movehandler = MOVEHANDLER()
-        self.leds = ledboard(con)
-        self.con = con
+        self.leds = ledboard(IO_Board)
+        self.con = IO_Board
 
         self.choicestate = States.choicestate.Choicestate(self)
         self.stablestate = States.stablestate.stablestate(self)
