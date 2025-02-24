@@ -71,3 +71,7 @@ class Resign(BaseCommand):
     """A Class Representing the Resign Command.
     It means that the player Resigned. Currently not Implemented"""
 
+class Restart(BaseCommand):
+    """A Class Representing the Restart Command.
+    Should restart the Game."""
+

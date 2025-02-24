@@ -5,6 +5,7 @@ from time import sleep
 import chess
 import serial
 
+import cmd_file
 from cmd_file import Takeback, Resign, Stabilise, Choice
 
 
@@ -89,6 +90,8 @@ class DISPLAY:
         elif strdata.startswith("Choice:"):
             l = strdata.split(":")
             return Choice(l[1],int(l[2]))
+        elif strdata == "Restart_BTN":
+            return cmd_file.Restart()
         else:
             logging.warning(f"Expected buttoncommand from scene Game. Got: {strdata}")
 

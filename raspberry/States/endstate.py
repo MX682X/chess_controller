@@ -5,6 +5,7 @@ from datetime import datetime
 import chess
 
 import States.basestate
+import cmd_file
 from config import pngdir
 
 import chess.pgn
@@ -51,3 +52,11 @@ class endstate(States.basestate.State):
             game.accept(exporter)
 
         print("Saved game at:", com_filename)
+
+    def command_handle(self,command):
+        if isinstance(command,cmd_file.Restart):
+            logging.info("Restarting game")
+            self.machine.board = chess.Board()
+            self.machine.choicestate.activate()
+        else:
+            logging.warning(f"Unknown Command: {command}")
