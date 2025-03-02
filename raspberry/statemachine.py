@@ -7,6 +7,8 @@ import States.choicestate
 import States.endstate
 import States.movestate
 import States.stablestate
+import States.promotionstate
+
 import cmd_file
 import displayfile
 from ledboard import ledboard
@@ -34,6 +36,7 @@ class Machine:
         self.stablestate = States.stablestate.stablestate(self)
         self.movestate = States.movestate.movestate(self)
         self.endstate = States.endstate.endstate(self)
+        self.promotionstate = States.promotionstate.Promotionstate(self)
 
         self.comcoluour: chess.Color = None;
         self.skilllevel = 20

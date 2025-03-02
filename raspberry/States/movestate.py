@@ -54,6 +54,11 @@ class movestate(States.basestate.State):
             return
 
         print(move)
+
+        if not move.promotion is None:
+            self.machine.promotionstate.activate(move)
+            return
+
         self.machine.board.push(move)
         self.machine.display.Addline("Your Move:" + sMove)
         self.machine.stablestate.activate()
