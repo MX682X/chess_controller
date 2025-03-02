@@ -17,7 +17,7 @@ class DISPLAY:
         sleep(0.01)
         self.conn = serial.Serial(port=port, baudrate=115200, timeout=.1)
 
-        #TODO: denhier durch ne statemachine ersetzen
+        # TODO: denhier durch ne statemachine ersetzen
         while True:
             if self.conn.in_waiting != 0:
                 data = self.conn.readline()
@@ -34,18 +34,17 @@ class DISPLAY:
         else:
             print("Scene already set")
 
-
     # SCENE 1_1
 
     def Addline(self, line: str):
         if self.scene == "Game":
             linelist = line.split("\n")
-            for l  in linelist:
+            for l in linelist:
                 self.conn.write(("Game:push:" + l + "\n").encode("utf-8"))
         else:
             logging.warning("Addline can only be used in Scene Game")
 
-    def Removeline(self,num = 1):
+    def Removeline(self, num=1):
         if self.scene == "Game":
             for _ in range(num):
                 self.conn.write(b"Game:rm\n")
@@ -76,7 +75,6 @@ class DISPLAY:
             warning("Display:" + strdata)
             return
 
-
         if strdata.startswith("Game_BTN:"):
             match strdata:
                 case "Game_BTN:TB":
@@ -89,18 +87,29 @@ class DISPLAY:
                     logging.warning(f"Unknown Command: {x}")
         elif strdata.startswith("Choice:"):
             l = strdata.split(":")
-            return Choice(l[1],int(l[2]))
+            return Choice(l[1], int(l[2]))
         elif strdata == "Restart_BTN":
             return cmd_file.Restart()
+        elif strdata.startswith("Promotion:"):
+            match strdata[10:]:
+                case "queen":
+                    return cmd_file.Promotion(chess.QUEEN)
+                case "rook":
+                    return cmd_file.Promotion(chess.ROOK)
+                case "bishop":
+                    return cmd_file.Promotion(chess.BISHOP)
+                case "knight":
+                    return cmd_file.Promotion(chess.KNIGHT)
+                case x:
+                    warning(f"Invalid promotion Piece:{x}. Only queen,rook,bishop and knight are allowed.")
         else:
             logging.warning(f"Expected buttoncommand from scene Game. Got: {strdata}")
 
-
-    def set_fen(self,fen: str|chess.Board):
+    def set_fen(self, fen: str | chess.Board):
         if type(fen) == chess.Board:
             fen = fen.board_fen()
 
-        self.conn.write(("Game:fen:" + fen+"\n").encode("utf-8"))
+        self.conn.write(("Game:fen:" + fen + "\n").encode("utf-8"))
 
     def close(self):
         self.conn.write(b"discon\n")

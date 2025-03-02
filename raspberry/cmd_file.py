@@ -2,6 +2,8 @@ import queue
 import threading
 from dataclasses import dataclass
 
+import chess
+
 
 def cmd_fun(q:queue.Queue):
     print("CMD Ready")
@@ -75,3 +77,9 @@ class Restart(BaseCommand):
     """A Class Representing the Restart Command.
     Should restart the Game."""
 
+@dataclass
+class Promotion(BaseCommand):
+    """A Class Representing a Choice to promote a Pawn to a certain Piece.
+    Args:
+        Piece(chess.PieceType): The Piece to promote the Pawn into. Should be Queen,Rook,Bishop or Knight"""
+    Piece:chess.PieceType
