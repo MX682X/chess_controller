@@ -11,6 +11,7 @@ if False:
 
 
 class movestate(States.basestate.State):
+    """This State is active when the Player or the Engine need to make a Move."""
     def __init__(self, machine: "Machine"):
         self.machine = machine
 

@@ -8,6 +8,7 @@ if False:
 
 
 class stablestate(States.basestate.State):
+    """This State is active when the virtual Board (Machine.Board) does not match Reality but should. Every Square that is illuminated is a mismatch."""
     def __init__(self, machine: "Machine"):
         self.istpos = None
         self.fehlt = None

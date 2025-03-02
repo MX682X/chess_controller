@@ -16,6 +16,7 @@ if False:
 
 
 class endstate(States.basestate.State):
+    """This State is active when the game is finished. The Display shows who won and a Button to restart the game."""
     def __init__(self, machine: "Machine"):
         self.machine = machine
 

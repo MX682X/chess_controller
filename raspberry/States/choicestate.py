@@ -12,6 +12,7 @@ if False:
 
 
 class Choicestate(States.basestate.State):
+    """This State is active While the Player Chooses his Color and the Strength of the Engine"""
     def __init__(self, machine: "Machine"):
         self.machine = machine
 
