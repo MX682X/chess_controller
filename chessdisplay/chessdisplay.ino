@@ -38,7 +38,8 @@ enum Scenes { S_Discon,
               S_Choice,
               S_Game,
               S_End,
-              S_Loading };
+              S_Loading,
+              S_Promotion };
 
 Scenes activeScene;
 
@@ -75,7 +76,6 @@ void touchscreen_read(lv_indev_t* indev, lv_indev_data_t* data) {
 
 
 void lv_create_main_gui(void) {
-
   lv_create_s_0(lv_screen_active());
   activeScene = S_Discon;
 }
@@ -139,6 +139,13 @@ void loop() {
     }
     if (myString == "SC:Loading") {
       transition_s_Loading();
+    }
+
+    if (myString == "SC:Promotion:black") {
+      transition_s_Promotion(true);
+    }
+    if (myString == "SC:Promotion:white") {
+      transition_s_Promotion(false);
     }
     if (myString.startsWith("SC:end:")) {
       transition_s_1_2(myString.substring(7));
