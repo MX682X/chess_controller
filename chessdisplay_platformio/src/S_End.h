@@ -3,6 +3,6 @@
 
 #include <Arduino.h>
 
-void transition_s_1_2(String type);
+void transition_s_end(String type);
 
 #endif

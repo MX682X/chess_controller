@@ -9,18 +9,18 @@ static void restart_bttn_callback(lv_event_t* e);
 
 //Endscreen
 
-void transition_s_1_2(String type) {
+void transition_s_end(String type) {
   if (!((type == "r") || (type == "p") || (type == "w") || (type == "b"))) {
     LV_LOG_WARN("Invalid game outcome. only b,w,r,p are allowed");
     return;
   }
 
 
-  lv_obj_t* scene_1_2 = lv_obj_create(NULL);
+  lv_obj_t* scene_end = lv_obj_create(NULL);
 
-  lv_create_s_end(scene_1_2, type);
+  lv_create_s_end(scene_end, type);
 
-  lv_screen_load_anim(scene_1_2, LV_SCR_LOAD_ANIM_MOVE_TOP, 1000, 0, true);
+  lv_screen_load_anim(scene_end, LV_SCR_LOAD_ANIM_MOVE_TOP, 1000, 0, true);
   activeScene = S_End;
 }
 

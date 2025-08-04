@@ -150,18 +150,18 @@ void loop() {
       transition_s_Promotion(false);
     }
     if (myString.startsWith("SC:end:")) {
-      transition_s_1_2(myString.substring(7));
+      transition_s_end(myString.substring(7));
       return;
     }
 
     if (activeScene == S_Game) {
       // Commands only avalible in Game Scene
       if (myString == "Game:rm") {
-        lable_1_1_rm();
+        Game_text_rm();
       } else if (myString == "Game:clr") {
-        lable_1_1_clear();
+        Game_text_clear();
       } else if (myString.startsWith("Game:push:")) {
-        lable_1_1_push(myString.substring(10));
+        Game_text_push(myString.substring(10));
       } else if (myString.startsWith("Game:fen:")) {
         set_board_fen(myString.substring(9).c_str());
       }

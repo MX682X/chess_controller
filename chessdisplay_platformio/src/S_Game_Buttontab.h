@@ -4,8 +4,8 @@
 
 void lv_create_buttontab(lv_obj_t* parent) ;
 
-void lable_1_1_push(String line);
-void lable_1_1_clear();
-void lable_1_1_rm();
+void Game_text_push(String line);
+void Game_text_clear();
+void Game_text_rm();
 
 #endif
