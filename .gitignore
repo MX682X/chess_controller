@@ -7,3 +7,6 @@
 avr/kicad/chessboard/chessboard-backups/*
 avr/kicad/chessboard/chessboard-backups/*
 avr/kicad/chessboard/fp-info-cache
+chessdisplay_platformio/.pio
+chessdisplay_platformio/.vscode
+
